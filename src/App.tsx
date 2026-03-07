@@ -12,6 +12,13 @@ import Income from "./pages/Income";
 import Bills from "./pages/Bills";
 import Investments from "./pages/Investments";
 import Plans from "./pages/Plans";
+import FinancialScore from "./pages/FinancialScore";
+import Challenges from "./pages/Challenges";
+import Projections from "./pages/Projections";
+import Comparison from "./pages/Comparison";
+import Diagnosis from "./pages/Diagnosis";
+import Calculators from "./pages/Calculators";
+import Referrals from "./pages/Referrals";
 import NotFound from "./pages/NotFound";
 import { AppLayout } from "./components/layout/AppLayout";
 
@@ -27,6 +34,8 @@ const App = () => (
           <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/diagnostico" element={<Diagnosis />} />
+          <Route path="/calculadoras" element={<Calculators />} />
           <Route element={<AppLayout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/despesas" element={<Expenses />} />
@@ -34,6 +43,11 @@ const App = () => (
             <Route path="/contas" element={<Bills />} />
             <Route path="/investimentos" element={<Investments />} />
             <Route path="/planos" element={<Plans />} />
+            <Route path="/score" element={<FinancialScore />} />
+            <Route path="/desafios" element={<Challenges />} />
+            <Route path="/projecoes" element={<Projections />} />
+            <Route path="/comparacao" element={<Comparison />} />
+            <Route path="/indicacoes" element={<Referrals />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>

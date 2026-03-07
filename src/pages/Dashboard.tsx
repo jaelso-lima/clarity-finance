@@ -1,9 +1,14 @@
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import {
   DollarSign,
   TrendingUp,
   TrendingDown,
   Wallet,
+  Heart,
+  Trophy,
+  ArrowRight,
 } from "lucide-react";
 import {
   BarChart,
@@ -66,7 +71,16 @@ const investmentGrowth = [
   { month: "Jun", valor: 19800 },
 ];
 
+const score = 72;
+const activeChallenges = [
+  { name: "Economizar R$300", progress: 40 },
+  { name: "7 dias sem gastos", progress: 57 },
+];
+
 export default function Dashboard() {
+  const circumference = 2 * Math.PI * 36;
+  const strokeDashoffset = circumference - (score / 100) * circumference;
+
   return (
     <div className="space-y-6">
       <div>
@@ -86,11 +100,7 @@ export default function Dashboard() {
                 </div>
               </div>
               <p className="font-display text-2xl font-bold">{card.value}</p>
-              <span
-                className={`text-xs font-medium ${
-                  card.positive ? "text-success" : "text-destructive"
-                }`}
-              >
+              <span className={`text-xs font-medium ${card.positive ? "text-success" : "text-destructive"}`}>
                 {card.trend} vs mês anterior
               </span>
             </CardContent>
@@ -98,43 +108,76 @@ export default function Dashboard() {
         ))}
       </div>
 
+      {/* Score + Challenges Quick View */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Link to="/score">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardContent className="p-5 flex items-center gap-5">
+              <div className="relative w-20 h-20 shrink-0">
+                <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 80 80">
+                  <circle cx="40" cy="40" r="36" stroke="hsl(var(--muted))" strokeWidth="6" fill="none" />
+                  <circle cx="40" cy="40" r="36" stroke="hsl(var(--primary))" strokeWidth="6" fill="none" strokeLinecap="round"
+                    strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} />
+                </svg>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="font-display text-lg font-bold">{score}</span>
+                </div>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2">
+                  <Heart className="h-4 w-4 text-primary" />
+                  <p className="font-display font-semibold">Score Financeiro</p>
+                </div>
+                <p className="text-sm text-muted-foreground mt-0.5">Sua saúde financeira está boa. Veja como melhorar.</p>
+                <span className="text-xs text-primary flex items-center gap-1 mt-1"><ArrowRight className="h-3 w-3" /> Ver detalhes</span>
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link to="/desafios">
+          <Card className="hover:shadow-md transition-shadow cursor-pointer">
+            <CardContent className="p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <Trophy className="h-4 w-4 text-warning" />
+                <p className="font-display font-semibold">Desafios Ativos</p>
+                <span className="text-xs text-primary ml-auto flex items-center gap-1"><ArrowRight className="h-3 w-3" /> Ver todos</span>
+              </div>
+              <div className="space-y-3">
+                {activeChallenges.map((c) => (
+                  <div key={c.name} className="space-y-1">
+                    <div className="flex justify-between text-xs">
+                      <span>{c.name}</span>
+                      <span className="text-muted-foreground">{c.progress}%</span>
+                    </div>
+                    <Progress value={c.progress} className="h-1.5" />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </Link>
+      </div>
+
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Expenses by Category */}
         <Card>
-          <CardHeader>
-            <CardTitle className="font-display text-lg">Despesas por Categoria</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle className="font-display text-lg">Despesas por Categoria</CardTitle></CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={280}>
               <PieChart>
-                <Pie
-                  data={expensesByCategory}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  paddingAngle={4}
-                  dataKey="value"
-                >
-                  {expensesByCategory.map((entry, index) => (
-                    <Cell key={index} fill={entry.color} />
-                  ))}
+                <Pie data={expensesByCategory} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={4} dataKey="value">
+                  {expensesByCategory.map((entry, index) => (<Cell key={index} fill={entry.color} />))}
                 </Pie>
-                <Tooltip
-                  formatter={(value: number) => `R$ ${value.toLocaleString("pt-BR")}`}
-                />
+                <Tooltip formatter={(value: number) => `R$ ${value.toLocaleString("pt-BR")}`} />
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        {/* Revenue vs Expenses */}
         <Card>
-          <CardHeader>
-            <CardTitle className="font-display text-lg">Receitas vs Despesas</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle className="font-display text-lg">Receitas vs Despesas</CardTitle></CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={revenueVsExpenses}>
@@ -150,11 +193,8 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Balance Evolution */}
         <Card>
-          <CardHeader>
-            <CardTitle className="font-display text-lg">Evolução do Saldo</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle className="font-display text-lg">Evolução do Saldo</CardTitle></CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={280}>
               <AreaChart data={balanceEvolution}>
@@ -162,25 +202,14 @@ export default function Dashboard() {
                 <XAxis dataKey="month" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip formatter={(value: number) => `R$ ${value.toLocaleString("pt-BR")}`} />
-                <Area
-                  type="monotone"
-                  dataKey="saldo"
-                  name="Saldo"
-                  stroke="hsl(200, 70%, 50%)"
-                  fill="hsl(200, 70%, 50%)"
-                  fillOpacity={0.15}
-                  strokeWidth={2}
-                />
+                <Area type="monotone" dataKey="saldo" name="Saldo" stroke="hsl(200, 70%, 50%)" fill="hsl(200, 70%, 50%)" fillOpacity={0.15} strokeWidth={2} />
               </AreaChart>
             </ResponsiveContainer>
           </CardContent>
         </Card>
 
-        {/* Investment Growth */}
         <Card>
-          <CardHeader>
-            <CardTitle className="font-display text-lg">Crescimento dos Investimentos</CardTitle>
-          </CardHeader>
+          <CardHeader><CardTitle className="font-display text-lg">Crescimento dos Investimentos</CardTitle></CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={280}>
               <LineChart data={investmentGrowth}>
@@ -188,14 +217,7 @@ export default function Dashboard() {
                 <XAxis dataKey="month" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip formatter={(value: number) => `R$ ${value.toLocaleString("pt-BR")}`} />
-                <Line
-                  type="monotone"
-                  dataKey="valor"
-                  name="Investimentos"
-                  stroke="hsl(160, 60%, 40%)"
-                  strokeWidth={2.5}
-                  dot={{ fill: "hsl(160, 60%, 40%)", r: 4 }}
-                />
+                <Line type="monotone" dataKey="valor" name="Investimentos" stroke="hsl(160, 60%, 40%)" strokeWidth={2.5} dot={{ fill: "hsl(160, 60%, 40%)", r: 4 }} />
               </LineChart>
             </ResponsiveContainer>
           </CardContent>
