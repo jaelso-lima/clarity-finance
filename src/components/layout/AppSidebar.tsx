@@ -8,16 +8,26 @@ import {
   CreditCard,
   ChevronLeft,
   LogOut,
+  Heart,
+  Trophy,
+  LineChart,
+  Users,
+  Gift,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
+  { icon: Heart, label: "Score Financeiro", path: "/score" },
   { icon: ArrowDownCircle, label: "Despesas", path: "/despesas" },
   { icon: ArrowUpCircle, label: "Receitas", path: "/receitas" },
   { icon: FileText, label: "Contas a Pagar", path: "/contas" },
   { icon: TrendingUp, label: "Investimentos", path: "/investimentos" },
+  { icon: LineChart, label: "Projeções", path: "/projecoes" },
+  { icon: Trophy, label: "Desafios", path: "/desafios" },
+  { icon: Users, label: "Comparação", path: "/comparacao" },
+  { icon: Gift, label: "Indicações", path: "/indicacoes" },
   { icon: CreditCard, label: "Planos", path: "/planos" },
 ];
 
@@ -58,7 +68,7 @@ export function AppSidebar({ open, onToggle }: AppSidebarProps) {
           </Button>
         </div>
 
-        <nav className="flex-1 space-y-1 p-3">
+        <nav className="flex-1 space-y-1 p-3 overflow-y-auto">
           {navItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
