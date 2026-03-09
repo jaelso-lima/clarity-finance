@@ -1,45 +1,36 @@
 import { useState } from "react";
-import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, Link, useLocation } from "react-router-dom";
 import {
-  LayoutDashboard,
-  Users,
-  CreditCard,
-  Gift,
-  FileText,
-  Handshake,
-  Shield,
-  Settings,
-  ChevronLeft,
-  LogOut,
-  Menu,
-  TrendingUp,
+  LayoutDashboard, Users, CreditCard, Gift, FileText,
+  Handshake, Shield, Settings, ChevronLeft, LogOut, Menu, TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { useCurrentPartner } from "@/hooks/useCurrentPartner";
+import type { PartnerPermissions } from "@/lib/partnerStore";
 
-const adminNavItems = [
-  { icon: LayoutDashboard, label: "Dashboard", path: "/admin" },
-  { icon: Users, label: "Usuários", path: "/admin/usuarios" },
-  { icon: CreditCard, label: "Planos", path: "/admin/planos" },
-  { icon: Gift, label: "Indicações", path: "/admin/indicacoes" },
-  { icon: FileText, label: "Relatórios", path: "/admin/relatorios" },
-  { icon: Handshake, label: "Sócios", path: "/admin/socios" },
-  { icon: Shield, label: "Segurança", path: "/admin/seguranca" },
-  { icon: Settings, label: "Configurações", path: "/admin/configuracoes" },
+const adminNavItems: { icon: typeof LayoutDashboard; label: string; path: string; permKey: keyof PartnerPermissions }[] = [
+  { icon: LayoutDashboard, label: "Dashboard", path: "/admin", permKey: "dashboard" },
+  { icon: Users, label: "Usuários", path: "/admin/usuarios", permKey: "usuarios" },
+  { icon: CreditCard, label: "Planos", path: "/admin/planos", permKey: "planos" },
+  { icon: Gift, label: "Indicações", path: "/admin/indicacoes", permKey: "indicacoes" },
+  { icon: FileText, label: "Relatórios", path: "/admin/relatorios", permKey: "relatorios" },
+  { icon: Handshake, label: "Sócios", path: "/admin/socios", permKey: "socios" },
+  { icon: Shield, label: "Segurança", path: "/admin/seguranca", permKey: "seguranca" },
+  { icon: Settings, label: "Configurações", path: "/admin/configuracoes", permKey: "configuracoes" },
 ];
 
 export function AdminLayout() {
   const [open, setOpen] = useState(true);
   const location = useLocation();
-  const navigate = useNavigate();
+  const { partner, hasPermission, isAdmin } = useCurrentPartner();
+
+  const visibleItems = adminNavItems.filter((item) => hasPermission(item.permKey));
 
   return (
     <div className="flex min-h-screen bg-background">
       {open && (
-        <div
-          className="fixed inset-0 z-40 bg-foreground/20 backdrop-blur-sm md:hidden"
-          onClick={() => setOpen(false)}
-        />
+        <div className="fixed inset-0 z-40 bg-foreground/20 backdrop-blur-sm md:hidden" onClick={() => setOpen(false)} />
       )}
       <aside
         className={cn(
@@ -63,7 +54,7 @@ export function AdminLayout() {
         </div>
 
         <nav className="flex-1 space-y-1 p-3 overflow-y-auto">
-          {adminNavItems.map((item) => {
+          {visibleItems.map((item) => {
             const isActive = location.pathname === item.path;
             return (
               <Link
@@ -71,9 +62,7 @@ export function AdminLayout() {
                 to={item.path}
                 className={cn(
                   "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                  isActive
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  isActive ? "bg-primary/10 text-primary" : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
               >
                 <item.icon className="h-5 w-5 shrink-0" />
@@ -84,6 +73,13 @@ export function AdminLayout() {
         </nav>
 
         <div className="border-t p-3 space-y-1">
+          {open && partner && (
+            <div className="px-3 py-2 mb-1">
+              <p className="text-xs text-muted-foreground">Logado como</p>
+              <p className="text-sm font-medium truncate">{partner.name}</p>
+              <p className="text-xs text-muted-foreground">{isAdmin ? "Administrador" : "Sócio"}</p>
+            </div>
+          )}
           <Link
             to="/dashboard"
             className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
@@ -109,7 +105,7 @@ export function AdminLayout() {
           <h1 className="text-lg font-semibold">Painel Administrativo</h1>
           <div className="flex-1" />
           <div className="h-8 w-8 rounded-full bg-destructive flex items-center justify-center text-destructive-foreground text-sm font-semibold">
-            A
+            {partner?.name.charAt(0) || "A"}
           </div>
         </header>
         <div className="p-6">
