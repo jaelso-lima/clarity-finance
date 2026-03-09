@@ -14,6 +14,99 @@ export type Database = {
   }
   public: {
     Tables: {
+      bills: {
+        Row: {
+          created_at: string
+          id: string
+          nome: string
+          status: string
+          user_id: string
+          valor: number
+          vencimento: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          nome: string
+          status?: string
+          user_id: string
+          valor: number
+          vencimento: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          nome?: string
+          status?: string
+          user_id?: string
+          valor?: number
+          vencimento?: string
+        }
+        Relationships: []
+      }
+      expenses: {
+        Row: {
+          categoria: string
+          created_at: string
+          data: string
+          descricao: string | null
+          id: string
+          pagamento: string | null
+          user_id: string
+          valor: number
+        }
+        Insert: {
+          categoria: string
+          created_at?: string
+          data: string
+          descricao?: string | null
+          id?: string
+          pagamento?: string | null
+          user_id: string
+          valor: number
+        }
+        Update: {
+          categoria?: string
+          created_at?: string
+          data?: string
+          descricao?: string | null
+          id?: string
+          pagamento?: string | null
+          user_id?: string
+          valor?: number
+        }
+        Relationships: []
+      }
+      incomes: {
+        Row: {
+          categoria: string
+          created_at: string
+          data: string
+          descricao: string | null
+          id: string
+          user_id: string
+          valor: number
+        }
+        Insert: {
+          categoria: string
+          created_at?: string
+          data: string
+          descricao?: string | null
+          id?: string
+          user_id: string
+          valor: number
+        }
+        Update: {
+          categoria?: string
+          created_at?: string
+          data?: string
+          descricao?: string | null
+          id?: string
+          user_id?: string
+          valor?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

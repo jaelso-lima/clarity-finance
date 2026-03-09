@@ -1,66 +1,80 @@
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Plus, Trash2, Edit2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-interface Expense {
-  id: string;
-  valor: number;
-  categoria: string;
-  descricao: string;
-  data: string;
-  pagamento: string;
-}
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const categorias = [
   "Alimentação", "Transporte", "Moradia", "Lazer", "Educação", "Saúde", "Outros",
 ];
 const pagamentos = ["Dinheiro", "Cartão de Crédito", "Cartão de Débito", "PIX", "Boleto"];
 
-const mockExpenses: Expense[] = [
-  { id: "1", valor: 250, categoria: "Alimentação", descricao: "Supermercado", data: "2025-06-01", pagamento: "Cartão de Débito" },
-  { id: "2", valor: 89.9, categoria: "Transporte", descricao: "Combustível", data: "2025-06-03", pagamento: "PIX" },
-  { id: "3", valor: 1200, categoria: "Moradia", descricao: "Aluguel", data: "2025-06-05", pagamento: "Boleto" },
-  { id: "4", valor: 150, categoria: "Lazer", descricao: "Cinema e jantar", data: "2025-06-08", pagamento: "Cartão de Crédito" },
-];
-
 export default function Expenses() {
-  const [expenses, setExpenses] = useState<Expense[]>(mockExpenses);
+  const [expenses, setExpenses] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ valor: "", categoria: "", descricao: "", data: "", pagamento: "" });
   const { toast } = useToast();
+  const { user } = useAuth();
 
-  const handleAdd = () => {
+  const fetchExpenses = async () => {
+    const { data, error } = await supabase
+      .from("expenses")
+      .select("*")
+      .order("data", { ascending: false });
+    if (error) {
+      toast({ title: "Erro ao carregar despesas", description: error.message, variant: "destructive" });
+    } else {
+      setExpenses(data || []);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchExpenses();
+  }, []);
+
+  const handleAdd = async () => {
     if (!form.valor || !form.categoria || !form.data) {
       toast({ title: "Preencha os campos obrigatórios", variant: "destructive" });
       return;
     }
-    const newExpense: Expense = {
-      id: Date.now().toString(),
+    const { error } = await supabase.from("expenses").insert({
+      user_id: user?.id,
       valor: parseFloat(form.valor),
       categoria: form.categoria,
       descricao: form.descricao,
       data: form.data,
       pagamento: form.pagamento,
-    };
-    setExpenses([newExpense, ...expenses]);
+    });
+    if (error) {
+      toast({ title: "Erro ao adicionar", description: error.message, variant: "destructive" });
+      return;
+    }
     setForm({ valor: "", categoria: "", descricao: "", data: "", pagamento: "" });
     setOpen(false);
     toast({ title: "Despesa adicionada com sucesso!" });
+    fetchExpenses();
   };
 
-  const handleDelete = (id: string) => {
-    setExpenses(expenses.filter((e) => e.id !== id));
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase.from("expenses").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Erro ao remover", description: error.message, variant: "destructive" });
+      return;
+    }
     toast({ title: "Despesa removida" });
+    fetchExpenses();
   };
 
-  const total = expenses.reduce((sum, e) => sum + e.valor, 0);
+  const total = expenses.reduce((sum, e) => sum + Number(e.valor), 0);
 
   return (
     <div className="space-y-6">
@@ -122,47 +136,53 @@ export default function Expenses() {
 
       <Card>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Data</TableHead>
-                <TableHead>Descrição</TableHead>
-                <TableHead>Categoria</TableHead>
-                <TableHead>Pagamento</TableHead>
-                <TableHead className="text-right">Valor</TableHead>
-                <TableHead className="w-16" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {expenses.map((e) => (
-                <TableRow key={e.id}>
-                  <TableCell className="text-sm">{new Date(e.data).toLocaleDateString("pt-BR")}</TableCell>
-                  <TableCell className="font-medium">{e.descricao}</TableCell>
-                  <TableCell>
-                    <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-                      {e.categoria}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">{e.pagamento}</TableCell>
-                  <TableCell className="text-right font-semibold text-destructive">
-                    R$ {e.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(e.id)}>
-                      <Trash2 className="h-4 w-4 text-muted-foreground" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {expenses.length === 0 && (
+          {loading ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                    Nenhuma despesa registrada ainda.
-                  </TableCell>
+                  <TableHead>Data</TableHead>
+                  <TableHead>Descrição</TableHead>
+                  <TableHead>Categoria</TableHead>
+                  <TableHead>Pagamento</TableHead>
+                  <TableHead className="text-right">Valor</TableHead>
+                  <TableHead className="w-16" />
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {expenses.map((e) => (
+                  <TableRow key={e.id}>
+                    <TableCell className="text-sm">{new Date(e.data).toLocaleDateString("pt-BR")}</TableCell>
+                    <TableCell className="font-medium">{e.descricao}</TableCell>
+                    <TableCell>
+                      <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                        {e.categoria}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">{e.pagamento}</TableCell>
+                    <TableCell className="text-right font-semibold text-destructive">
+                      R$ {Number(e.valor).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="icon" onClick={() => handleDelete(e.id)}>
+                        <Trash2 className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {expenses.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                      Nenhuma despesa registrada ainda.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>
