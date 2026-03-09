@@ -48,20 +48,21 @@ const App = () => (
             <Route path="/register" element={<Register />} />
             <Route path="/diagnostico" element={<Diagnosis />} />
             <Route path="/calculadoras" element={<Calculators />} />
-            <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/despesas" element={<Expenses />} />
-              <Route path="/receitas" element={<Income />} />
-              <Route path="/contas" element={<Bills />} />
-              <Route path="/investimentos" element={<Investments />} />
-              <Route path="/planos" element={<Plans />} />
-              <Route path="/score" element={<FinancialScore />} />
-              <Route path="/desafios" element={<Challenges />} />
-              <Route path="/projecoes" element={<Projections />} />
-              <Route path="/comparacao" element={<Comparison />} />
-              <Route path="/indicacoes" element={<Referrals />} />
-            </Route>
-            <Route element={<ProtectedRoute><AdminLayout /></ProtectedRoute>}>
+            <Route element={<ProtectedRoute />}>
+              <Route element={<AppLayout />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/despesas" element={<Expenses />} />
+                <Route path="/receitas" element={<Income />} />
+                <Route path="/contas" element={<Bills />} />
+                <Route path="/investimentos" element={<Investments />} />
+                <Route path="/planos" element={<Plans />} />
+                <Route path="/score" element={<FinancialScore />} />
+                <Route path="/desafios" element={<Challenges />} />
+                <Route path="/projecoes" element={<Projections />} />
+                <Route path="/comparacao" element={<Comparison />} />
+                <Route path="/indicacoes" element={<Referrals />} />
+              </Route>
+              <Route element={<AdminLayout />}>
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/usuarios" element={<AdminUsers />} />
               <Route path="/admin/planos" element={<AdminPlans />} />
