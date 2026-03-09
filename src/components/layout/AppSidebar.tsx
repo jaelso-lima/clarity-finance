@@ -13,6 +13,7 @@ import {
   LineChart,
   Users,
   Gift,
+  Shield,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -89,7 +90,14 @@ export function AppSidebar({ open, onToggle }: AppSidebarProps) {
           })}
         </nav>
 
-        <div className="border-t p-3">
+        <div className="border-t p-3 space-y-1">
+          <Link
+            to="/admin"
+            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
+          >
+            <Shield className="h-5 w-5 shrink-0" />
+            {open && <span>Painel Admin</span>}
+          </Link>
           <Link
             to="/"
             className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
