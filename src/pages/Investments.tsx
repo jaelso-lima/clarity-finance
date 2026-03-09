@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,67 +8,85 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Trash2, TrendingUp, TrendingDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-
-interface Investment {
-  id: string;
-  tipo: string;
-  descricao: string;
-  valorInvestido: number;
-  lucroPrejuizo: number;
-  data: string;
-}
 
 const tipos = ["Ações", "Criptomoedas", "Renda Fixa", "Fundos", "Outros"];
 
-const mockInvestments: Investment[] = [
-  { id: "1", tipo: "Ações", descricao: "PETR4", valorInvestido: 5000, lucroPrejuizo: 800, data: "2025-01-15" },
-  { id: "2", tipo: "Criptomoedas", descricao: "Bitcoin", valorInvestido: 3000, lucroPrejuizo: 1200, data: "2025-02-10" },
-  { id: "3", tipo: "Renda Fixa", descricao: "CDB 120% CDI", valorInvestido: 10000, lucroPrejuizo: 450, data: "2025-03-01" },
-  { id: "4", tipo: "Fundos", descricao: "Fundo Multimercado", valorInvestido: 5000, lucroPrejuizo: -200, data: "2025-04-20" },
-];
-
-const chartData = [
-  { month: "Jan", total: 15000 },
-  { month: "Fev", total: 18000 },
-  { month: "Mar", total: 18500 },
-  { month: "Abr", total: 19800 },
-  { month: "Mai", total: 21000 },
-  { month: "Jun", total: 23250 },
-];
-
 export default function Investments() {
-  const [investments, setInvestments] = useState<Investment[]>(mockInvestments);
+  const [investments, setInvestments] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ tipo: "", descricao: "", valorInvestido: "", lucroPrejuizo: "", data: "" });
   const { toast } = useToast();
+  const { user } = useAuth();
 
-  const handleAdd = () => {
+  const fetchInvestments = async () => {
+    const { data, error } = await supabase
+      .from("investments")
+      .select("*")
+      .order("data", { ascending: false });
+    if (error) {
+      toast({ title: "Erro ao carregar investimentos", description: error.message, variant: "destructive" });
+    } else {
+      setInvestments(data || []);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchInvestments();
+  }, []);
+
+  const handleAdd = async () => {
     if (!form.tipo || !form.valorInvestido || !form.data) {
       toast({ title: "Preencha os campos obrigatórios", variant: "destructive" });
       return;
     }
-    const inv: Investment = {
-      id: Date.now().toString(),
+    const { error } = await supabase.from("investments").insert({
+      user_id: user?.id,
       tipo: form.tipo,
       descricao: form.descricao,
-      valorInvestido: parseFloat(form.valorInvestido),
-      lucroPrejuizo: parseFloat(form.lucroPrejuizo || "0"),
+      valor_investido: parseFloat(form.valorInvestido),
+      lucro_prejuizo: parseFloat(form.lucroPrejuizo || "0"),
       data: form.data,
-    };
-    setInvestments([inv, ...investments]);
+    });
+    if (error) {
+      toast({ title: "Erro ao adicionar", description: error.message, variant: "destructive" });
+      return;
+    }
     setForm({ tipo: "", descricao: "", valorInvestido: "", lucroPrejuizo: "", data: "" });
     setOpen(false);
     toast({ title: "Investimento adicionado!" });
+    fetchInvestments();
   };
 
-  const handleDelete = (id: string) => {
-    setInvestments(investments.filter((i) => i.id !== id));
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase.from("investments").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Erro ao remover", description: error.message, variant: "destructive" });
+      return;
+    }
     toast({ title: "Investimento removido" });
+    fetchInvestments();
   };
 
-  const totalInvested = investments.reduce((s, i) => s + i.valorInvestido, 0);
-  const totalProfit = investments.reduce((s, i) => s + i.lucroPrejuizo, 0);
+  const totalInvested = investments.reduce((s, i) => s + Number(i.valor_investido), 0);
+  const totalProfit = investments.reduce((s, i) => s + Number(i.lucro_prejuizo), 0);
+
+  // Build chart data from real investments grouped by month
+  const chartData = investments.reduce((acc: any[], inv) => {
+    const month = new Date(inv.data).toLocaleDateString("pt-BR", { month: "short" });
+    const existing = acc.find((a) => a.month === month);
+    const val = Number(inv.valor_investido) + Number(inv.lucro_prejuizo);
+    if (existing) {
+      existing.total += val;
+    } else {
+      acc.push({ month, total: val });
+    }
+    return acc;
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -129,73 +147,79 @@ export default function Investments() {
         </Dialog>
       </div>
 
-      {/* Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-display text-lg">Evolução dos Investimentos</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <ResponsiveContainer width="100%" height={280}>
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(150, 15%, 90%)" />
-              <XAxis dataKey="month" tick={{ fontSize: 12 }} />
-              <YAxis tick={{ fontSize: 12 }} />
-              <Tooltip formatter={(value: number) => `R$ ${value.toLocaleString("pt-BR")}`} />
-              <Line type="monotone" dataKey="total" name="Total" stroke="hsl(160, 60%, 40%)" strokeWidth={2.5} dot={{ fill: "hsl(160, 60%, 40%)", r: 4 }} />
-            </LineChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
+      {chartData.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-display text-lg">Evolução dos Investimentos</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={280}>
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="hsl(150, 15%, 90%)" />
+                <XAxis dataKey="month" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} />
+                <Tooltip formatter={(value: number) => `R$ ${value.toLocaleString("pt-BR")}`} />
+                <Line type="monotone" dataKey="total" name="Total" stroke="hsl(160, 60%, 40%)" strokeWidth={2.5} dot={{ fill: "hsl(160, 60%, 40%)", r: 4 }} />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Table */}
       <Card>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Data</TableHead>
-                <TableHead>Descrição</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead className="text-right">Investido</TableHead>
-                <TableHead className="text-right">Lucro/Prejuízo</TableHead>
-                <TableHead className="w-16" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {investments.map((inv) => (
-                <TableRow key={inv.id}>
-                  <TableCell className="text-sm">{new Date(inv.data).toLocaleDateString("pt-BR")}</TableCell>
-                  <TableCell className="font-medium">{inv.descricao}</TableCell>
-                  <TableCell>
-                    <span className="rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-medium text-accent">
-                      {inv.tipo}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right font-semibold">
-                    R$ {inv.valorInvestido.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                  </TableCell>
-                  <TableCell className="text-right font-semibold">
-                    <span className={`flex items-center justify-end gap-1 ${inv.lucroPrejuizo >= 0 ? "text-success" : "text-destructive"}`}>
-                      {inv.lucroPrejuizo >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
-                      R$ {Math.abs(inv.lucroPrejuizo).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(inv.id)}>
-                      <Trash2 className="h-4 w-4 text-muted-foreground" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {investments.length === 0 && (
+          {loading ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                    Nenhum investimento registrado.
-                  </TableCell>
+                  <TableHead>Data</TableHead>
+                  <TableHead>Descrição</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead className="text-right">Investido</TableHead>
+                  <TableHead className="text-right">Lucro/Prejuízo</TableHead>
+                  <TableHead className="w-16" />
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {investments.map((inv) => (
+                  <TableRow key={inv.id}>
+                    <TableCell className="text-sm">{new Date(inv.data).toLocaleDateString("pt-BR")}</TableCell>
+                    <TableCell className="font-medium">{inv.descricao}</TableCell>
+                    <TableCell>
+                      <span className="rounded-full bg-accent/10 px-2.5 py-0.5 text-xs font-medium text-accent">
+                        {inv.tipo}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right font-semibold">
+                      R$ {Number(inv.valor_investido).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    </TableCell>
+                    <TableCell className="text-right font-semibold">
+                      <span className={`flex items-center justify-end gap-1 ${Number(inv.lucro_prejuizo) >= 0 ? "text-success" : "text-destructive"}`}>
+                        {Number(inv.lucro_prejuizo) >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                        R$ {Math.abs(Number(inv.lucro_prejuizo)).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="icon" onClick={() => handleDelete(inv.id)}>
+                        <Trash2 className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {investments.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                      Nenhum investimento registrado.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>
