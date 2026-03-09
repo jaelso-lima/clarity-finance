@@ -107,6 +107,81 @@ export type Database = {
         }
         Relationships: []
       }
+      investments: {
+        Row: {
+          created_at: string
+          data: string
+          descricao: string | null
+          id: string
+          lucro_prejuizo: number
+          tipo: string
+          user_id: string
+          valor_investido: number
+        }
+        Insert: {
+          created_at?: string
+          data: string
+          descricao?: string | null
+          id?: string
+          lucro_prejuizo?: number
+          tipo: string
+          user_id: string
+          valor_investido: number
+        }
+        Update: {
+          created_at?: string
+          data?: string
+          descricao?: string | null
+          id?: string
+          lucro_prejuizo?: number
+          tipo?: string
+          user_id?: string
+          valor_investido?: number
+        }
+        Relationships: []
+      }
+      plans: {
+        Row: {
+          checkout_url: string | null
+          created_at: string
+          description: string | null
+          features: Json | null
+          id: string
+          interval: string
+          is_active: boolean
+          name: string
+          price: number
+          stripe_price_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          checkout_url?: string | null
+          created_at?: string
+          description?: string | null
+          features?: Json | null
+          id?: string
+          interval?: string
+          is_active?: boolean
+          name: string
+          price?: number
+          stripe_price_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          checkout_url?: string | null
+          created_at?: string
+          description?: string | null
+          features?: Json | null
+          id?: string
+          interval?: string
+          is_active?: boolean
+          name?: string
+          price?: number
+          stripe_price_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -136,6 +211,80 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      promo_logs: {
+        Row: {
+          created_at: string
+          duration: string
+          granted_by: string | null
+          id: string
+          reason: string
+          target_email: string
+        }
+        Insert: {
+          created_at?: string
+          duration: string
+          granted_by?: string | null
+          id?: string
+          reason: string
+          target_email: string
+        }
+        Update: {
+          created_at?: string
+          duration?: string
+          granted_by?: string | null
+          id?: string
+          reason?: string
+          target_email?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          granted_by: string | null
+          id: string
+          plan_id: string
+          reason: string | null
+          starts_at: string
+          status: string
+          stripe_subscription_id: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          granted_by?: string | null
+          id?: string
+          plan_id: string
+          reason?: string | null
+          starts_at?: string
+          status?: string
+          stripe_subscription_id?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          granted_by?: string | null
+          id?: string
+          plan_id?: string
+          reason?: string | null
+          starts_at?: string
+          status?: string
+          stripe_subscription_id?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
