@@ -10,6 +10,7 @@ import { useTheme } from "@/hooks/useTheme";
 export function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const { profile, signOut } = useAuth();
+  const { theme, toggle } = useTheme();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
