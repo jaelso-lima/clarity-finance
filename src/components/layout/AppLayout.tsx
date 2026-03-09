@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
-import { Menu, LogOut } from "lucide-react";
+import { Menu, LogOut, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/NotificationBell";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/hooks/useTheme";
 
 export function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const { profile, signOut } = useAuth();
+  const { theme, toggle } = useTheme();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -32,6 +34,9 @@ export function AppLayout() {
           <div className="flex-1" />
           <div className="flex items-center gap-3">
             <NotificationBell />
+            <Button variant="ghost" size="icon" onClick={toggle} title="Alternar tema">
+              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
             <Button variant="ghost" size="icon" onClick={handleLogout} title="Sair">
               <LogOut className="h-4 w-4" />
             </Button>
