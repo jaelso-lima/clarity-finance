@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,53 +8,69 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Plus, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-
-interface IncomeItem {
-  id: string;
-  valor: number;
-  categoria: string;
-  descricao: string;
-  data: string;
-}
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 
 const categorias = ["Salário", "Renda Extra", "Comissões", "Lucros", "Outros"];
 
-const mockIncome: IncomeItem[] = [
-  { id: "1", valor: 8500, categoria: "Salário", descricao: "Salário mensal", data: "2025-06-05" },
-  { id: "2", valor: 2500, categoria: "Renda Extra", descricao: "Freelance design", data: "2025-06-10" },
-  { id: "3", valor: 1300, categoria: "Comissões", descricao: "Comissão vendas", data: "2025-06-15" },
-];
-
 export default function Income() {
-  const [income, setIncome] = useState<IncomeItem[]>(mockIncome);
+  const [income, setIncome] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [form, setForm] = useState({ valor: "", categoria: "", descricao: "", data: "" });
   const { toast } = useToast();
+  const { user } = useAuth();
 
-  const handleAdd = () => {
+  const fetchIncome = async () => {
+    const { data, error } = await supabase
+      .from("incomes")
+      .select("*")
+      .order("data", { ascending: false });
+    if (error) {
+      toast({ title: "Erro ao carregar receitas", description: error.message, variant: "destructive" });
+    } else {
+      setIncome(data || []);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchIncome();
+  }, []);
+
+  const handleAdd = async () => {
     if (!form.valor || !form.categoria || !form.data) {
       toast({ title: "Preencha os campos obrigatórios", variant: "destructive" });
       return;
     }
-    const item: IncomeItem = {
-      id: Date.now().toString(),
+    const { error } = await supabase.from("incomes").insert({
+      user_id: user?.id,
       valor: parseFloat(form.valor),
       categoria: form.categoria,
       descricao: form.descricao,
       data: form.data,
-    };
-    setIncome([item, ...income]);
+    });
+    if (error) {
+      toast({ title: "Erro ao adicionar", description: error.message, variant: "destructive" });
+      return;
+    }
     setForm({ valor: "", categoria: "", descricao: "", data: "" });
     setOpen(false);
     toast({ title: "Receita adicionada com sucesso!" });
+    fetchIncome();
   };
 
-  const handleDelete = (id: string) => {
-    setIncome(income.filter((i) => i.id !== id));
+  const handleDelete = async (id: string) => {
+    const { error } = await supabase.from("incomes").delete().eq("id", id);
+    if (error) {
+      toast({ title: "Erro ao remover", description: error.message, variant: "destructive" });
+      return;
+    }
     toast({ title: "Receita removida" });
+    fetchIncome();
   };
 
-  const total = income.reduce((sum, i) => sum + i.valor, 0);
+  const total = income.reduce((sum, i) => sum + Number(i.valor), 0);
 
   return (
     <div className="space-y-6">
@@ -107,45 +123,51 @@ export default function Income() {
 
       <Card>
         <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Data</TableHead>
-                <TableHead>Descrição</TableHead>
-                <TableHead>Categoria</TableHead>
-                <TableHead className="text-right">Valor</TableHead>
-                <TableHead className="w-16" />
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {income.map((i) => (
-                <TableRow key={i.id}>
-                  <TableCell className="text-sm">{new Date(i.data).toLocaleDateString("pt-BR")}</TableCell>
-                  <TableCell className="font-medium">{i.descricao}</TableCell>
-                  <TableCell>
-                    <span className="rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-medium text-success">
-                      {i.categoria}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-right font-semibold text-success">
-                    R$ {i.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
-                  </TableCell>
-                  <TableCell>
-                    <Button variant="ghost" size="icon" onClick={() => handleDelete(i.id)}>
-                      <Trash2 className="h-4 w-4 text-muted-foreground" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-              {income.length === 0 && (
+          {loading ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary" />
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                    Nenhuma receita registrada ainda.
-                  </TableCell>
+                  <TableHead>Data</TableHead>
+                  <TableHead>Descrição</TableHead>
+                  <TableHead>Categoria</TableHead>
+                  <TableHead className="text-right">Valor</TableHead>
+                  <TableHead className="w-16" />
                 </TableRow>
-              )}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {income.map((i) => (
+                  <TableRow key={i.id}>
+                    <TableCell className="text-sm">{new Date(i.data).toLocaleDateString("pt-BR")}</TableCell>
+                    <TableCell className="font-medium">{i.descricao}</TableCell>
+                    <TableCell>
+                      <span className="rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-medium text-success">
+                        {i.categoria}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-right font-semibold text-success">
+                      R$ {Number(i.valor).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+                    </TableCell>
+                    <TableCell>
+                      <Button variant="ghost" size="icon" onClick={() => handleDelete(i.id)}>
+                        <Trash2 className="h-4 w-4 text-muted-foreground" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {income.length === 0 && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                      Nenhuma receita registrada ainda.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          )}
         </CardContent>
       </Card>
     </div>
