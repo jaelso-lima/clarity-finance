@@ -1,10 +1,11 @@
 import { useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
-import { Menu, LogOut } from "lucide-react";
+import { Menu, LogOut, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { NotificationBell } from "@/components/NotificationBell";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/hooks/useTheme";
 
 export function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
