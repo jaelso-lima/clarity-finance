@@ -21,6 +21,15 @@ import Calculators from "./pages/Calculators";
 import Referrals from "./pages/Referrals";
 import NotFound from "./pages/NotFound";
 import { AppLayout } from "./components/layout/AppLayout";
+import { AdminLayout } from "./components/layout/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminPlans from "./pages/admin/AdminPlans";
+import AdminReferrals from "./pages/admin/AdminReferrals";
+import AdminReports from "./pages/admin/AdminReports";
+import AdminPartners from "./pages/admin/AdminPartners";
+import AdminSecurity from "./pages/admin/AdminSecurity";
+import AdminSettings from "./pages/admin/AdminSettings";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +57,16 @@ const App = () => (
             <Route path="/projecoes" element={<Projections />} />
             <Route path="/comparacao" element={<Comparison />} />
             <Route path="/indicacoes" element={<Referrals />} />
+          </Route>
+          <Route element={<AdminLayout />}>
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/usuarios" element={<AdminUsers />} />
+            <Route path="/admin/planos" element={<AdminPlans />} />
+            <Route path="/admin/indicacoes" element={<AdminReferrals />} />
+            <Route path="/admin/relatorios" element={<AdminReports />} />
+            <Route path="/admin/socios" element={<AdminPartners />} />
+            <Route path="/admin/seguranca" element={<AdminSecurity />} />
+            <Route path="/admin/configuracoes" element={<AdminSettings />} />
           </Route>
           <Route path="*" element={<NotFound />} />
         </Routes>
