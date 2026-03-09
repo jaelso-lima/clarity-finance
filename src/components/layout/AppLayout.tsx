@@ -34,6 +34,9 @@ export function AppLayout() {
           <div className="flex-1" />
           <div className="flex items-center gap-3">
             <NotificationBell />
+            <Button variant="ghost" size="icon" onClick={toggle} title="Alternar tema">
+              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
             <Button variant="ghost" size="icon" onClick={handleLogout} title="Sair">
               <LogOut className="h-4 w-4" />
             </Button>
