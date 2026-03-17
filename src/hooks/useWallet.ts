@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 
+const FREE_WELCOME_COINS = 5;
+
 export function useWallet() {
   const { user } = useAuth();
   const [wallet, setWallet] = useState<{ subscription_balance: number; earnings_balance: number } | null>(null);
@@ -13,9 +15,18 @@ export function useWallet() {
     if (data) {
       setWallet(data);
     } else {
-      // Create wallet if not exists
-      await supabase.from("wallets").insert({ user_id: user.id, subscription_balance: 0, earnings_balance: 0 });
-      setWallet({ subscription_balance: 0, earnings_balance: 0 });
+      // Create wallet with 5 free subscription coins (non-withdrawable)
+      const newWallet = { user_id: user.id, subscription_balance: FREE_WELCOME_COINS, earnings_balance: 0 };
+      await supabase.from("wallets").insert(newWallet);
+      // Log the welcome bonus
+      await supabase.from("coin_transactions").insert({
+        user_id: user.id,
+        type: "subscription_credit",
+        amount: FREE_WELCOME_COINS,
+        balance_type: "subscription",
+        description: "Bônus de boas-vindas — 5 Coins grátis",
+      });
+      setWallet({ subscription_balance: FREE_WELCOME_COINS, earnings_balance: 0 });
     }
     setLoading(false);
   }, [user]);
