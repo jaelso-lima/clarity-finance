@@ -37,6 +37,7 @@ import AdminReports from "./pages/admin/AdminReports";
 import AdminPartners from "./pages/admin/AdminPartners";
 import AdminSecurity from "./pages/admin/AdminSecurity";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminGames from "./pages/admin/AdminGames";
 
 const queryClient = new QueryClient();
 
