@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, ArrowLeftRight, FileText, TrendingUp, CreditCard, ChevronLeft, LogOut,
-  Heart, LineChart, Gift, Shield, User, Trophy, Calculator, Gamepad2, Wallet,
+  Heart, Gift, Shield, User, Trophy, Calculator, Gamepad2, Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ const navItems = [
   { icon: FileText, label: "Contas", path: "/contas" },
   { icon: TrendingUp, label: "Investimentos", path: "/investimentos" },
   { icon: Calculator, label: "Simulador", path: "/simulador" },
-  { icon: LineChart, label: "Projeções", path: "/projecoes" },
+  
   { icon: Trophy, label: "Conquistas", path: "/desafios" },
   { icon: Gamepad2, label: "Arena", path: "/arena" },
   { icon: Wallet, label: "Carteira", path: "/carteira" },

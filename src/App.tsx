@@ -17,7 +17,7 @@ import Investments from "./pages/Investments";
 import Plans from "./pages/Plans";
 import FinancialScore from "./pages/FinancialScore";
 import Challenges from "./pages/Challenges";
-import Projections from "./pages/Projections";
+
 import Comparison from "./pages/Comparison";
 import Diagnosis from "./pages/Diagnosis";
 import Calculators from "./pages/Calculators";
@@ -69,7 +69,7 @@ const App = () => (
                 <Route path="/desafios" element={<Challenges />} />
                 <Route path="/arena" element={<Arena />} />
                 <Route path="/carteira" element={<WalletPage />} />
-                <Route path="/projecoes" element={<Projections />} />
+                
                 <Route path="/comparacao" element={<Comparison />} />
                 <Route path="/indicacoes" element={<Referrals />} />
                 <Route path="/perfil" element={<Profile />} />
