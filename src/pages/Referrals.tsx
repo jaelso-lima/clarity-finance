@@ -84,6 +84,9 @@ export default function Referrals() {
             <Button variant="outline" size="sm" onClick={() => handleShare("twitter")} className="gap-2">
               <Share2 className="h-4 w-4" /> Twitter
             </Button>
+            <Button variant="outline" size="sm" onClick={() => handleShare("instagram")} className="gap-2">
+              <Instagram className="h-4 w-4" /> Instagram
+            </Button>
           </div>
         </CardContent>
       </Card>
