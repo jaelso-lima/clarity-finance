@@ -19,6 +19,7 @@ export default function CheckersGame({ match, userId, onEnd }: CheckersGameProps
   const [gameState, setGameState] = useState<any>(match.game_state);
   const [selectedCell, setSelectedCell] = useState<[number, number] | null>(null);
   const [possibleMoves, setPossibleMoves] = useState<[number, number][]>([]);
+  const [forcedPiece, setForcedPiece] = useState<[number, number] | null>(null); // locked during chain capture
   const [chatMsg, setChatMsg] = useState("");
   const [chatMessages, setChatMessages] = useState<any[]>(match.chat_messages || []);
   const { toast } = useToast();
@@ -224,13 +225,16 @@ export default function CheckersGame({ match, userId, onEnd }: CheckersGameProps
     const piece = board[row][col];
 
     if (selectedCell) {
-      const [sr, sc] = selectedCell;
       const isValidMove = possibleMoves.some(([mr, mc]) => mr === row && mc === col);
       if (isValidMove) {
+        const [sr, sc] = selectedCell;
         makeMove(sr, sc, row, col);
         return;
       }
     }
+
+    // If forced to continue chain capture, can't select another piece
+    if (forcedPiece) return;
 
     if (isOwnPiece(piece)) {
       setSelectedCell([row, col]);
@@ -312,8 +316,15 @@ export default function CheckersGame({ match, userId, onEnd }: CheckersGameProps
       setGameState(newState);
     }
 
-    setSelectedCell(canContinue ? [toR, toC] : null);
-    setPossibleMoves(canContinue ? getValidMoves(toR, toC, newBoard).captures : []);
+    if (canContinue) {
+      setSelectedCell([toR, toC]);
+      setForcedPiece([toR, toC]);
+      setPossibleMoves(getValidMoves(toR, toC, newBoard).captures);
+    } else {
+      setSelectedCell(null);
+      setForcedPiece(null);
+      setPossibleMoves([]);
+    }
   };
 
   function checkHasMoves(b: Piece[][], color: string) {
