@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import TicTacToeGame from "@/components/games/TicTacToeGame";
 import CheckersGame from "@/components/games/CheckersGame";
+import ArenaRanking from "@/components/arena/ArenaRanking";
 import { useWallet } from "@/hooks/useWallet";
 import { BOT_USER_ID } from "@/lib/botAI";
 
