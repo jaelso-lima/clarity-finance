@@ -60,7 +60,7 @@ export const ALL_PERMISSIONS: { key: keyof PartnerPermissions; label: string; de
 
 export const DEFAULT_FULL_PERMISSIONS: PartnerPermissions = {
   dashboard: true, usuarios: true, planos: true, indicacoes: true,
-  relatorios: true, socios: true, seguranca: true, configuracoes: true,
+  relatorios: true, socios: true, seguranca: true, configuracoes: true, jogos: true,
 };
 
 export const DEFAULT_LIMITED_PERMISSIONS: PartnerPermissions = {
