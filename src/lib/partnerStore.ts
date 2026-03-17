@@ -65,7 +65,7 @@ export const DEFAULT_FULL_PERMISSIONS: PartnerPermissions = {
 
 export const DEFAULT_LIMITED_PERMISSIONS: PartnerPermissions = {
   dashboard: true, usuarios: false, planos: false, indicacoes: false,
-  relatorios: true, socios: false, seguranca: false, configuracoes: false,
+  relatorios: true, socios: false, seguranca: false, configuracoes: false, jogos: false,
 };
 
 // In-memory store — ready to swap for Supabase queries
