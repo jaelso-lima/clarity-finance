@@ -68,19 +68,20 @@ export default function CheckersGame({ match, userId, onEnd }: CheckersGameProps
       newBoard[move.to[0]][move.to[1]] = piece;
       newBoard[move.from[0]][move.from[1]] = null;
 
-      // Capture
-      if (Math.abs(move.to[0] - move.from[0]) === 2) {
-        const dr = Math.sign(move.to[0] - move.from[0]);
-        const dc = Math.sign(move.to[1] - move.from[1]);
-        newBoard[move.from[0] + dr][move.from[1] + dc] = null;
+      // Capture: walk diagonal to find captured piece
+      const dr = Math.sign(move.to[0] - move.from[0]);
+      const dc = Math.sign(move.to[1] - move.from[1]);
+      const distance = Math.abs(move.to[0] - move.from[0]);
+      let isCapture = false;
+      for (let step = 1; step < distance; step++) {
+        const mr = move.from[0] + dr * step;
+        const mc = move.from[1] + dc * step;
+        if (newBoard[mr][mc] !== null) {
+          newBoard[mr][mc] = null;
+          isCapture = true;
+          break;
+        }
       }
-
-      // Promotion
-      if (piece === "red" && move.to[0] === 0) newBoard[move.to[0]][move.to[1]] = "red-king";
-      if (piece === "black" && move.to[0] === 7) newBoard[move.to[0]][move.to[1]] = "black-king";
-
-      // Check multi-capture
-      const isCapture = Math.abs(move.to[0] - move.from[0]) === 2;
       let canContinue = false;
       if (isCapture) {
         const { captures } = getValidMoves(move.to[0], move.to[1], newBoard);
