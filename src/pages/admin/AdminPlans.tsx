@@ -7,15 +7,17 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Crown, Send, Plus, Trash2, Edit2, ExternalLink } from "lucide-react";
+import { Crown, Send, Plus, Trash2, Edit2, ExternalLink, Loader2, Gift } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function AdminPlans() {
   const [email, setEmail] = useState("");
+  const [planType, setPlanType] = useState("");
   const [duration, setDuration] = useState("");
   const [reason, setReason] = useState("");
+  const [grantLoading, setGrantLoading] = useState(false);
   const [promoLogs, setPromoLogs] = useState<any[]>([]);
   const [plans, setPlans] = useState<any[]>([]);
   const [planOpen, setPlanOpen] = useState(false);
@@ -36,23 +38,62 @@ export default function AdminPlans() {
   useEffect(() => { fetchData(); }, []);
 
   const handlePromo = async () => {
-    if (!email || !duration || !reason) {
+    if (!email || !planType || !duration || !reason) {
       toast({ title: "Preencha todos os campos", variant: "destructive" });
       return;
     }
-    const { error } = await supabase.from("promo_logs").insert({
-      target_email: email,
-      duration,
-      reason,
-      granted_by: user?.id,
-    });
-    if (error) {
-      toast({ title: "Erro", description: error.message, variant: "destructive" });
+
+    // Find the plan ID matching the selected type
+    const selectedPlan = plans.find((p) => p.name.toLowerCase().includes(planType.toLowerCase()));
+    if (!selectedPlan) {
+      toast({ title: "Plano não encontrado", description: "Crie o plano correspondente primeiro.", variant: "destructive" });
       return;
     }
-    toast({ title: "PRO liberado!", description: `Plano PRO de ${duration} liberado para ${email}.` });
-    setEmail(""); setDuration(""); setReason("");
-    fetchData();
+
+    // Map duration to days
+    const durationMap: Record<string, number> = {
+      "7 dias": 7,
+      "15 dias": 15,
+      "1 mês": 30,
+      "3 meses": 90,
+      "6 meses": 180,
+      "1 ano": 365,
+    };
+    const days = durationMap[duration] || 30;
+
+    setGrantLoading(true);
+    try {
+      // Call edge function to create real subscription
+      const res = await supabase.functions.invoke("admin-users", {
+        body: {
+          action: "grant-plan",
+          email,
+          planId: selectedPlan.id,
+          duration: String(days),
+          reason: `${reason} (${planType})`,
+          userId: user?.id,
+        },
+      });
+
+      if (res.error) throw res.error;
+      if (res.data?.error) throw new Error(res.data.error);
+
+      // Log the promo action
+      await supabase.from("promo_logs").insert({
+        target_email: email,
+        duration: `${duration} (${planType})`,
+        reason,
+        granted_by: user?.id,
+      });
+
+      toast({ title: "Plano concedido! ✅", description: `${planType} de ${duration} liberado para ${email}.` });
+      setEmail(""); setPlanType(""); setDuration(""); setReason("");
+      fetchData();
+    } catch (err: any) {
+      toast({ title: "Erro ao conceder plano", description: err.message, variant: "destructive" });
+    } finally {
+      setGrantLoading(false);
+    }
   };
 
   const handleSavePlan = async () => {
@@ -114,8 +155,66 @@ export default function AdminPlans() {
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-bold font-display">Gerenciamento de Planos</h2>
-        <p className="text-muted-foreground">Crie planos, configure links de checkout Stripe e libere PRO</p>
+        <p className="text-muted-foreground">Crie planos, configure links de checkout Stripe e libere PRO manualmente</p>
       </div>
+
+      {/* Grant PRO manually */}
+      <Card className="border-warning/30 bg-warning/5">
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Gift className="h-5 w-5 text-warning" /> Liberar Plano Manualmente
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="space-y-2">
+              <Label>Email do usuário *</Label>
+              <Input placeholder="email@exemplo.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Tipo de Plano *</Label>
+              <Select value={planType} onValueChange={setPlanType}>
+                <SelectTrigger><SelectValue placeholder="Selecionar..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="PRO">PRO</SelectItem>
+                  <SelectItem value="Casal">Casal</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Duração *</Label>
+              <Select value={duration} onValueChange={setDuration}>
+                <SelectTrigger><SelectValue placeholder="Selecionar..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="7 dias">7 dias</SelectItem>
+                  <SelectItem value="15 dias">15 dias</SelectItem>
+                  <SelectItem value="1 mês">1 mês</SelectItem>
+                  <SelectItem value="3 meses">3 meses</SelectItem>
+                  <SelectItem value="6 meses">6 meses</SelectItem>
+                  <SelectItem value="1 ano">1 ano</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Motivo *</Label>
+              <Select value={reason} onValueChange={setReason}>
+                <SelectTrigger><SelectValue placeholder="Selecionar..." /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Divulgação">Divulgação</SelectItem>
+                  <SelectItem value="Parceria">Parceria</SelectItem>
+                  <SelectItem value="Teste">Teste</SelectItem>
+                  <SelectItem value="Cortesia">Cortesia</SelectItem>
+                  <SelectItem value="Suporte">Suporte</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <Button onClick={handlePromo} disabled={grantLoading} className="gradient-primary border-0">
+            {grantLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Send className="h-4 w-4 mr-2" />}
+            Liberar Plano
+          </Button>
+        </CardContent>
+      </Card>
 
       {/* Plans CRUD */}
       <Card>
@@ -165,7 +264,6 @@ export default function AdminPlans() {
                   <div className="space-y-2">
                     <Label>🔗 Link do Checkout (Stripe)</Label>
                     <Input placeholder="https://checkout.stripe.com/..." value={planForm.checkout_url} onChange={(e) => setPlanForm({ ...planForm, checkout_url: e.target.value })} />
-                    <p className="text-xs text-muted-foreground">Cole aqui o link de pagamento do Stripe para facilitar a integração.</p>
                   </div>
                   <Button onClick={handleSavePlan} className="w-full gradient-primary border-0">
                     {editingPlan ? "Salvar Alterações" : "Criar Plano"}
@@ -227,50 +325,15 @@ export default function AdminPlans() {
         </CardContent>
       </Card>
 
-      {/* Promo PRO */}
+      {/* History */}
       <Card>
-        <CardHeader><CardTitle className="text-base flex items-center gap-2"><Crown className="h-5 w-5 text-warning" /> Liberar Plano PRO</CardTitle></CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid sm:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>Email do usuário</Label>
-              <Input placeholder="email@exemplo.com" value={email} onChange={(e) => setEmail(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label>Duração</Label>
-              <Select value={duration} onValueChange={setDuration}>
-                <SelectTrigger><SelectValue placeholder="Selecionar..." /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1 mês">1 mês</SelectItem>
-                  <SelectItem value="3 meses">3 meses</SelectItem>
-                  <SelectItem value="6 meses">6 meses</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Motivo</Label>
-              <Select value={reason} onValueChange={setReason}>
-                <SelectTrigger><SelectValue placeholder="Selecionar..." /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Divulgação">Divulgação</SelectItem>
-                  <SelectItem value="Parceria">Parceria</SelectItem>
-                  <SelectItem value="Teste">Teste</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <Button onClick={handlePromo}><Send className="h-4 w-4 mr-2" /> Liberar PRO</Button>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader><CardTitle className="text-base">Histórico de Liberações</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base flex items-center gap-2"><Crown className="h-5 w-5 text-warning" /> Histórico de Liberações</CardTitle></CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Email</TableHead>
-                <TableHead>Duração</TableHead>
+                <TableHead>Duração / Tipo</TableHead>
                 <TableHead>Motivo</TableHead>
                 <TableHead>Data</TableHead>
               </TableRow>

@@ -21,6 +21,7 @@ import Projections from "./pages/Projections";
 import Comparison from "./pages/Comparison";
 import Diagnosis from "./pages/Diagnosis";
 import Calculators from "./pages/Calculators";
+import Simulator from "./pages/Simulator";
 import Referrals from "./pages/Referrals";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -59,6 +60,7 @@ const App = () => (
                 <Route path="/receitas" element={<Movimentacoes />} />
                 <Route path="/contas" element={<Bills />} />
                 <Route path="/investimentos" element={<Investments />} />
+                <Route path="/simulador" element={<Simulator />} />
                 <Route path="/planos" element={<Plans />} />
                 <Route path="/score" element={<FinancialScore />} />
                 <Route path="/desafios" element={<Challenges />} />
