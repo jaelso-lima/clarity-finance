@@ -22,6 +22,8 @@ import Comparison from "./pages/Comparison";
 import Diagnosis from "./pages/Diagnosis";
 import Calculators from "./pages/Calculators";
 import Simulator from "./pages/Simulator";
+import Arena from "./pages/Arena";
+import WalletPage from "./pages/WalletPage";
 import Referrals from "./pages/Referrals";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
@@ -35,6 +37,7 @@ import AdminReports from "./pages/admin/AdminReports";
 import AdminPartners from "./pages/admin/AdminPartners";
 import AdminSecurity from "./pages/admin/AdminSecurity";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminGames from "./pages/admin/AdminGames";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +67,8 @@ const App = () => (
                 <Route path="/planos" element={<Plans />} />
                 <Route path="/score" element={<FinancialScore />} />
                 <Route path="/desafios" element={<Challenges />} />
+                <Route path="/arena" element={<Arena />} />
+                <Route path="/carteira" element={<WalletPage />} />
                 <Route path="/projecoes" element={<Projections />} />
                 <Route path="/comparacao" element={<Comparison />} />
                 <Route path="/indicacoes" element={<Referrals />} />
@@ -78,6 +83,7 @@ const App = () => (
                 <Route path="/admin/socios" element={<AdminPartners />} />
                 <Route path="/admin/seguranca" element={<AdminSecurity />} />
                 <Route path="/admin/configuracoes" element={<AdminSettings />} />
+                <Route path="/admin/jogos" element={<AdminGames />} />
               </Route>
             </Route>
             <Route path="*" element={<NotFound />} />

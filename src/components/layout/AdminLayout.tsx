@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, CreditCard, Gift, FileText,
-  Handshake, Shield, Settings, ChevronLeft, LogOut, Menu, TrendingUp,
+  Handshake, Shield, Settings, ChevronLeft, LogOut, Menu, TrendingUp, Gamepad2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ const adminNavItems: { icon: typeof LayoutDashboard; label: string; path: string
   { icon: Handshake, label: "Sócios", path: "/admin/socios", permKey: "socios" },
   { icon: Shield, label: "Segurança", path: "/admin/seguranca", permKey: "seguranca" },
   { icon: Settings, label: "Configurações", path: "/admin/configuracoes", permKey: "configuracoes" },
+  { icon: Gamepad2, label: "Jogos & Coins", path: "/admin/jogos", permKey: "jogos" },
 ];
 
 export function AdminLayout() {

@@ -10,6 +10,7 @@ export interface PartnerPermissions {
   socios: boolean;
   seguranca: boolean;
   configuracoes: boolean;
+  jogos: boolean;
 }
 
 export interface Partner {
@@ -54,16 +55,17 @@ export const ALL_PERMISSIONS: { key: keyof PartnerPermissions; label: string; de
   { key: "socios", label: "Sócios", description: "Gerenciar sócios e pagamentos" },
   { key: "seguranca", label: "Segurança", description: "Acessar logs e anti-fraude" },
   { key: "configuracoes", label: "Configurações", description: "Alterar configurações do sistema" },
+  { key: "jogos", label: "Jogos & Coins", description: "Gerenciar partidas, saldos e saques" },
 ];
 
 export const DEFAULT_FULL_PERMISSIONS: PartnerPermissions = {
   dashboard: true, usuarios: true, planos: true, indicacoes: true,
-  relatorios: true, socios: true, seguranca: true, configuracoes: true,
+  relatorios: true, socios: true, seguranca: true, configuracoes: true, jogos: true,
 };
 
 export const DEFAULT_LIMITED_PERMISSIONS: PartnerPermissions = {
   dashboard: true, usuarios: false, planos: false, indicacoes: false,
-  relatorios: true, socios: false, seguranca: false, configuracoes: false,
+  relatorios: true, socios: false, seguranca: false, configuracoes: false, jogos: false,
 };
 
 // In-memory store — ready to swap for Supabase queries
@@ -75,7 +77,7 @@ let partnersData: Partner[] = [
   },
   {
     id: "p2", name: "Roberto Lima", email: "roberto@email.com", phone: "(11) 99999-0002",
-    share: 50, role: "socio", permissions: { ...DEFAULT_FULL_PERMISSIONS, configuracoes: false, seguranca: false },
+    share: 50, role: "socio", permissions: { ...DEFAULT_FULL_PERMISSIONS, configuracoes: false, seguranca: false, jogos: false },
     status: "ativo", totalReceived: 9375, joinedAt: "2025-01-01",
   },
 ];
