@@ -55,26 +55,46 @@ function getValidMovesForPiece(row: number, col: number, board: Piece[][], color
   const piece = board[row][col];
   if (!piece) return { moves: [], captures: [] };
 
-  const isKing = piece.endsWith("-king");
+  const pieceIsKing = piece.endsWith("-king");
   const directions: [number, number][] = [];
-  if (piece.startsWith("red") || isKing) directions.push([-1, -1], [-1, 1]);
-  if (piece.startsWith("black") || isKing) directions.push([1, -1], [1, 1]);
+  if (piece.startsWith("red") || pieceIsKing) directions.push([-1, -1], [-1, 1]);
+  if (piece.startsWith("black") || pieceIsKing) directions.push([1, -1], [1, 1]);
 
   const moves: [number, number][] = [];
   const captures: [number, number][] = [];
 
   for (const [dr, dc] of directions) {
-    const nr = row + dr;
-    const nc = col + dc;
-    if (nr < 0 || nr >= 8 || nc < 0 || nc >= 8) continue;
-
-    if (board[nr][nc] === null) {
-      moves.push([nr, nc]);
-    } else if (!board[nr][nc]!.startsWith(color)) {
-      const jr = nr + dr;
-      const jc = nc + dc;
-      if (jr >= 0 && jr < 8 && jc >= 0 && jc < 8 && board[jr][jc] === null) {
-        captures.push([jr, jc]);
+    if (pieceIsKing) {
+      let nr = row + dr;
+      let nc = col + dc;
+      let foundOpponent: [number, number] | null = null;
+      while (nr >= 0 && nr < 8 && nc >= 0 && nc < 8) {
+        if (board[nr][nc] === null) {
+          if (foundOpponent) {
+            captures.push([nr, nc]);
+          } else {
+            moves.push([nr, nc]);
+          }
+        } else if (!board[nr][nc]!.startsWith(color) && !foundOpponent) {
+          foundOpponent = [nr, nc];
+        } else {
+          break;
+        }
+        nr += dr;
+        nc += dc;
+      }
+    } else {
+      const nr = row + dr;
+      const nc = col + dc;
+      if (nr < 0 || nr >= 8 || nc < 0 || nc >= 8) continue;
+      if (board[nr][nc] === null) {
+        moves.push([nr, nc]);
+      } else if (!board[nr][nc]!.startsWith(color)) {
+        const jr = nr + dr;
+        const jc = nc + dc;
+        if (jr >= 0 && jr < 8 && jc >= 0 && jc < 8 && board[jr][jc] === null) {
+          captures.push([jr, jc]);
+        }
       }
     }
   }
