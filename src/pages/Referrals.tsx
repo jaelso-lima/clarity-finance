@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Users, Gift, Copy, Check, Share2, Trophy, Star } from "lucide-react";
+import { Users, Gift, Copy, Check, Share2, Trophy, Star, Instagram } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const referralCode = "FINANCE-ABC123";
