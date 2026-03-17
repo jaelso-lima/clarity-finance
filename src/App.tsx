@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import { AiChat } from "@/components/AiChat";
 import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -15,6 +16,7 @@ import Bills from "./pages/Bills";
 import Investments from "./pages/Investments";
 import Plans from "./pages/Plans";
 import FinancialScore from "./pages/FinancialScore";
+import Challenges from "./pages/Challenges";
 import Projections from "./pages/Projections";
 import Comparison from "./pages/Comparison";
 import Diagnosis from "./pages/Diagnosis";
@@ -59,6 +61,7 @@ const App = () => (
                 <Route path="/investimentos" element={<Investments />} />
                 <Route path="/planos" element={<Plans />} />
                 <Route path="/score" element={<FinancialScore />} />
+                <Route path="/desafios" element={<Challenges />} />
                 <Route path="/projecoes" element={<Projections />} />
                 <Route path="/comparacao" element={<Comparison />} />
                 <Route path="/indicacoes" element={<Referrals />} />
@@ -77,6 +80,7 @@ const App = () => (
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
+          <AiChat />
         </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
