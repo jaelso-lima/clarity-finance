@@ -50,7 +50,7 @@ export default function Register() {
             <div className="h-10 w-10 rounded-lg gradient-primary flex items-center justify-center">
               <TrendingUp className="h-5 w-5 text-primary-foreground" />
             </div>
-            <span className="font-display text-2xl font-bold text-gradient">FinanceFlow</span>
+            <span className="font-display text-2xl font-bold text-gradient">Nexo</span>
           </Link>
           <CardTitle className="font-display text-2xl">Crie sua conta</CardTitle>
           <CardDescription>Comece a organizar suas finanças hoje</CardDescription>

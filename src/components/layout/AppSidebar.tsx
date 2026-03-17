@@ -1,19 +1,17 @@
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
-  ArrowDownCircle,
-  ArrowUpCircle,
+  ArrowLeftRight,
   FileText,
   TrendingUp,
   CreditCard,
   ChevronLeft,
   LogOut,
   Heart,
-  Trophy,
   LineChart,
-  Users,
   Gift,
   Shield,
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -21,15 +19,13 @@ import { Button } from "@/components/ui/button";
 const navItems = [
   { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
   { icon: Heart, label: "Score Financeiro", path: "/score" },
-  { icon: ArrowDownCircle, label: "Despesas", path: "/despesas" },
-  { icon: ArrowUpCircle, label: "Receitas", path: "/receitas" },
+  { icon: ArrowLeftRight, label: "Movimentações", path: "/movimentacoes" },
   { icon: FileText, label: "Contas a Pagar", path: "/contas" },
   { icon: TrendingUp, label: "Investimentos", path: "/investimentos" },
   { icon: LineChart, label: "Projeções", path: "/projecoes" },
-  { icon: Trophy, label: "Desafios", path: "/desafios" },
-  { icon: Users, label: "Comparação", path: "/comparacao" },
   { icon: Gift, label: "Indicações", path: "/indicacoes" },
   { icon: CreditCard, label: "Planos", path: "/planos" },
+  { icon: User, label: "Perfil", path: "/perfil" },
 ];
 
 interface AppSidebarProps {
@@ -61,7 +57,7 @@ export function AppSidebar({ open, onToggle }: AppSidebarProps) {
               <div className="h-8 w-8 rounded-lg gradient-primary flex items-center justify-center">
                 <TrendingUp className="h-4 w-4 text-primary-foreground" />
               </div>
-              <span className="font-display text-lg font-bold text-gradient">FinanceFlow</span>
+              <span className="font-display text-lg font-bold text-gradient">Nexo</span>
             </Link>
           )}
           <Button variant="ghost" size="icon" onClick={onToggle} className="hidden md:flex">

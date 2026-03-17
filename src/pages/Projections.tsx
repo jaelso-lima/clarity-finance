@@ -1,12 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { TrendingUp, TrendingDown, AlertTriangle, Sparkles } from "lucide-react";
-import {
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend,
-} from "recharts";
+import { LineChart as LineChartIcon, Plus } from "lucide-react";
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { supabase } from "@/integrations/supabase/client";
 
 function generateProjection(monthly: number, months: number, rate: number) {
   const data = [];
@@ -18,38 +18,59 @@ function generateProjection(monthly: number, months: number, rate: number) {
   return data;
 }
 
-const scenarios = [
-  {
-    title: "Se continuar gastando assim...",
-    description: "Em 6 meses você pode entrar em dívida de R$3.200",
-    icon: AlertTriangle,
-    color: "text-destructive",
-    bg: "bg-destructive/5 border-destructive/10",
-  },
-  {
-    title: "Se economizar 15% da renda",
-    description: "Em 2 anos pode acumular R$12.000 em poupança",
-    icon: TrendingUp,
-    color: "text-success",
-    bg: "bg-success/5 border-success/10",
-  },
-  {
-    title: "Se investir R$300/mês",
-    description: "Em 5 anos pode ter R$80.000 com rendimento médio de 12% a.a.",
-    icon: Sparkles,
-    color: "text-primary",
-    bg: "bg-primary/5 border-primary/10",
-  },
-];
-
-const savingsData = generateProjection(1845, 24, 0.8);
-const investmentData = generateProjection(300, 60, 1.0);
-
 export default function Projections() {
+  const [loading, setLoading] = useState(true);
+  const [hasData, setHasData] = useState(false);
   const [simMonthly, setSimMonthly] = useState(500);
   const [simRate, setSimRate] = useState(1.0);
   const [simMonths, setSimMonths] = useState(24);
+
+  useEffect(() => {
+    const check = async () => {
+      const [expRes, incRes] = await Promise.all([
+        supabase.from("expenses").select("id", { count: "exact", head: true }),
+        supabase.from("incomes").select("id", { count: "exact", head: true }),
+      ]);
+      setHasData((expRes.count || 0) > 0 && (incRes.count || 0) > 0);
+      setLoading(false);
+    };
+    check();
+  }, []);
+
   const simData = generateProjection(simMonthly, simMonths, simRate);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
+
+  if (!hasData) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="font-display text-2xl md:text-3xl font-bold">Projeção Financeira</h1>
+          <p className="text-muted-foreground">Veja seu futuro financeiro com base nos dados atuais</p>
+        </div>
+        <Card>
+          <CardContent className="p-10 flex flex-col items-center text-center gap-4">
+            <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <LineChartIcon className="h-8 w-8 text-primary" />
+            </div>
+            <h2 className="font-display text-xl font-semibold">Adicione seus dados para ver projeções financeiras inteligentes.</h2>
+            <p className="text-muted-foreground max-w-md">
+              Registre suas receitas e despesas para que possamos calcular projeções personalizadas.
+            </p>
+            <Button asChild className="gradient-primary border-0 mt-2">
+              <Link to="/movimentacoes"><Plus className="h-4 w-4 mr-2" /> Adicionar movimentação</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -58,57 +79,6 @@ export default function Projections() {
         <p className="text-muted-foreground">Veja seu futuro financeiro com base nos dados atuais</p>
       </div>
 
-      {/* Scenarios */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {scenarios.map((s) => (
-          <Card key={s.title} className={`border ${s.bg}`}>
-            <CardContent className="p-5">
-              <s.icon className={`h-8 w-8 ${s.color} mb-3`} />
-              <p className={`font-display font-semibold ${s.color}`}>{s.title}</p>
-              <p className="text-sm text-muted-foreground mt-1">{s.description}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Projection Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-display text-lg">Projeção de Economia (24 meses)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={280}>
-              <AreaChart data={savingsData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(150, 15%, 90%)" />
-                <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip formatter={(v: number) => `R$ ${v.toLocaleString("pt-BR")}`} />
-                <Area type="monotone" dataKey="valor" name="Economia Acumulada" stroke="hsl(160, 60%, 40%)" fill="hsl(160, 60%, 40%)" fillOpacity={0.15} strokeWidth={2} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="font-display text-lg">Projeção de Investimentos (5 anos)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ResponsiveContainer width="100%" height={280}>
-              <LineChart data={investmentData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(150, 15%, 90%)" />
-                <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                <YAxis tick={{ fontSize: 11 }} />
-                <Tooltip formatter={(v: number) => `R$ ${v.toLocaleString("pt-BR")}`} />
-                <Line type="monotone" dataKey="valor" name="Investimento Acumulado" stroke="hsl(200, 70%, 50%)" strokeWidth={2.5} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Simulator */}
       <Card>
         <CardHeader>
           <CardTitle className="font-display text-lg">Simulador Interativo</CardTitle>
@@ -135,7 +105,7 @@ export default function Projections() {
           </div>
           <ResponsiveContainer width="100%" height={260}>
             <AreaChart data={simData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(150, 15%, 90%)" />
+              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
               <XAxis dataKey="month" tick={{ fontSize: 11 }} />
               <YAxis tick={{ fontSize: 11 }} />
               <Tooltip formatter={(v: number) => `R$ ${v.toLocaleString("pt-BR")}`} />
