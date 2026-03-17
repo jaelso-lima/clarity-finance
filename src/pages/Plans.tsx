@@ -34,6 +34,7 @@ const plans = [
       "Projeções inteligentes",
       "Relatórios PDF",
       "Comparação anônima",
+      "+19 Coins/mês (não sacáveis)",
       "Suporte prioritário",
     ],
     cta: "Assinar PRO",
