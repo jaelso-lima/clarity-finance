@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard, Users, CreditCard, Gift, FileText,
-  Handshake, Shield, Settings, ChevronLeft, LogOut, Menu, TrendingUp,
+  Handshake, Shield, Settings, ChevronLeft, LogOut, Menu, TrendingUp, Gamepad2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
