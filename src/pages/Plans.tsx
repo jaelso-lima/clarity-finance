@@ -8,13 +8,13 @@ const plans = [
     name: "Free",
     price: "R$0",
     period: "/mês",
-    description: "Ideal para começar a se organizar",
+    description: "Para começar a organizar",
     features: [
-      "50 registros de despesas",
-      "50 registros de receitas",
-      "10 investimentos",
-      "2 relatórios por mês",
-      "Gráficos básicos",
+      "50 registros/mês",
+      "Dashboard básico",
+      "Gráficos simples",
+      "Score financeiro",
+      "Conquistas",
       "Suporte por e-mail",
     ],
     cta: "Plano Atual",
@@ -23,18 +23,18 @@ const plans = [
   },
   {
     name: "PRO",
-    price: "R$14,90",
+    price: "R$19,90",
     period: "/mês",
-    description: "Para quem quer o controle total",
+    description: "Para quem quer resultados",
     badge: "MAIS POPULAR",
     features: [
       "Registros ilimitados",
-      "Relatórios completos",
       "Gráficos avançados",
-      "Exportar em PDF",
-      "Agente financeiro IA completo",
+      "IA financeira ilimitada",
+      "Projeções inteligentes",
+      "Relatórios PDF",
+      "Comparação anônima",
       "Suporte prioritário",
-      "Sem anúncios",
     ],
     cta: "Assinar PRO",
     current: false,
@@ -43,9 +43,9 @@ const plans = [
 ];
 
 const periods = [
-  { label: "Mensal", price: "R$14,90/mês", discount: null },
-  { label: "Semestral", price: "R$12,90/mês", discount: "Economize 13%" },
-  { label: "Anual", price: "R$9,90/mês", discount: "Economize 33%" },
+  { label: "Mensal", price: "R$19,90/mês", discount: null },
+  { label: "Semestral", price: "R$16,90/mês", discount: "Economize 15%" },
+  { label: "Anual", price: "R$12,90/mês", discount: "Economize 35%" },
 ];
 
 export default function Plans() {

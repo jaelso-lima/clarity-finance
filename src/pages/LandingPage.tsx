@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { LanguageTranslator } from "@/components/LanguageTranslator";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
@@ -63,7 +64,8 @@ export default function LandingPage() {
             <a href="#planos" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Planos</a>
             <a href="#faq" className="text-sm text-muted-foreground hover:text-foreground transition-colors">FAQ</a>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <LanguageTranslator />
             <Button variant="ghost" asChild><Link to="/login">Entrar</Link></Button>
             <Button asChild className="gradient-primary border-0 rounded-xl"><Link to="/register">Começar grátis</Link></Button>
           </div>
@@ -191,14 +193,14 @@ export default function LandingPage() {
             <p className="text-muted-foreground text-lg">Comece grátis, evolua quando quiser.</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {/* Free */}
+           {/* Free */}
             <Card>
               <CardContent className="p-8">
                 <h3 className="font-display text-2xl font-bold mb-2">Free</h3>
                 <p className="text-muted-foreground text-sm mb-4">Para começar a organizar</p>
                 <div className="mb-6"><span className="font-display text-4xl font-extrabold">R$0</span><span className="text-muted-foreground">/mês</span></div>
                 <ul className="space-y-3 mb-8">
-                  {["50 registros/mês", "Dashboard básico", "Gráficos simples", "Score financeiro", "Conquistas"].map((item) => (
+                  {["50 registros/mês", "Dashboard básico", "Gráficos simples", "Score financeiro", "Conquistas", "Suporte por e-mail"].map((item) => (
                     <li key={item} className="flex items-center gap-2 text-sm"><Check className="h-4 w-4 text-success shrink-0" />{item}</li>
                   ))}
                 </ul>
@@ -221,6 +223,27 @@ export default function LandingPage() {
                   ))}
                 </ul>
                 <Button className="w-full gradient-primary border-0 rounded-xl h-12 shadow-lg shadow-primary/25" asChild><Link to="/register">Assinar PRO</Link></Button>
+
+                {/* Period options */}
+                <div className="mt-6 pt-6 border-t border-border/50">
+                  <p className="text-xs text-muted-foreground mb-3 font-medium">Economize com planos maiores:</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="rounded-lg border border-primary bg-accent/50 p-2 text-center">
+                      <p className="text-[10px] text-muted-foreground">Mensal</p>
+                      <p className="text-xs font-bold">R$19,90</p>
+                    </div>
+                    <div className="rounded-lg border p-2 text-center hover:border-primary transition-colors cursor-pointer">
+                      <p className="text-[10px] text-muted-foreground">Semestral</p>
+                      <p className="text-xs font-bold">R$16,90</p>
+                      <p className="text-[9px] text-success font-medium">-15%</p>
+                    </div>
+                    <div className="rounded-lg border p-2 text-center hover:border-primary transition-colors cursor-pointer">
+                      <p className="text-[10px] text-muted-foreground">Anual</p>
+                      <p className="text-xs font-bold">R$12,90</p>
+                      <p className="text-[9px] text-success font-medium">-35%</p>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 
