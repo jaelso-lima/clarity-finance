@@ -82,6 +82,11 @@ export default function CheckersGame({ match, userId, onEnd }: CheckersGameProps
           break;
         }
       }
+
+      // Promotion
+      if (piece === "red" && move.to[0] === 0) newBoard[move.to[0]][move.to[1]] = "red-king";
+      if (piece === "black" && move.to[0] === 7) newBoard[move.to[0]][move.to[1]] = "black-king";
+
       let canContinue = false;
       if (isCapture) {
         const { captures } = getValidMoves(move.to[0], move.to[1], newBoard);
