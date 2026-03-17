@@ -1,14 +1,14 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { TrendingUp, TrendingDown, Shield, Target, PiggyBank, BarChart3, Heart, Plus } from "lucide-react";
+import { Heart, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 function getScoreColor(s: number) {
   if (s >= 80) return "text-success";
-  if (s >= 60) return "text-warning";
+  if (s >= 60) return "text-primary";
+  if (s >= 40) return "text-warning";
   return "text-destructive";
 }
 
@@ -19,10 +19,18 @@ function getScoreLabel(s: number) {
   return "Crítico";
 }
 
+function getBarColor(s: number) {
+  if (s >= 80) return "bg-success";
+  if (s >= 60) return "bg-primary";
+  if (s >= 40) return "bg-warning";
+  return "bg-destructive";
+}
+
 export default function FinancialScore() {
   const [loading, setLoading] = useState(true);
   const [hasData, setHasData] = useState(false);
-  const [scoreData, setScoreData] = useState({ score: 0, breakdown: [] as { label: string; value: number; icon: any }[] });
+  const [score, setScore] = useState(0);
+  const [breakdown, setBreakdown] = useState<{ label: string; value: number }[]>([]);
 
   useEffect(() => {
     const fetch = async () => {
@@ -39,11 +47,8 @@ export default function FinancialScore() {
       const investments = invRes.data || [];
 
       if (incomes.length === 0 && expenses.length === 0) {
-        setHasData(false);
-        setLoading(false);
-        return;
+        setHasData(false); setLoading(false); return;
       }
-
       setHasData(true);
 
       const totalIncome = incomes.reduce((s, i) => s + Number(i.valor), 0);
@@ -52,51 +57,45 @@ export default function FinancialScore() {
       const totalInvested = investments.reduce((s, i) => s + Number(i.valor_investido), 0);
       const saldo = totalIncome - totalExpenses;
 
-      // Calculate sub-scores
-      const incomeVsExpense = totalIncome > 0 ? Math.min(100, Math.round((saldo / totalIncome) * 100 + 50)) : 0;
-      const debtControl = totalIncome > 0 ? Math.max(0, Math.min(100, 100 - Math.round((totalPending / totalIncome) * 100))) : (totalPending === 0 ? 100 : 0);
-      const investmentScore = totalIncome > 0 ? Math.min(100, Math.round((totalInvested / totalIncome) * 100)) : 0;
+      const incVsExp = totalIncome > 0 ? Math.min(100, Math.round((saldo / totalIncome) * 100 + 50)) : 0;
+      const debtCtrl = totalIncome > 0 ? Math.max(0, Math.min(100, 100 - Math.round((totalPending / totalIncome) * 100))) : (totalPending === 0 ? 100 : 0);
+      const investScore = totalIncome > 0 ? Math.min(100, Math.round((totalInvested / totalIncome) * 100)) : 0;
       const savingsRate = totalIncome > 0 ? Math.max(0, Math.min(100, Math.round((saldo / totalIncome) * 100))) : 0;
 
-      const breakdown = [
-        { label: "Receitas vs Despesas", value: Math.max(0, incomeVsExpense), icon: BarChart3 },
-        { label: "Controle de Dívidas", value: debtControl, icon: Shield },
-        { label: "Investimentos", value: Math.min(100, investmentScore), icon: TrendingUp },
-        { label: "Taxa de Economia", value: Math.max(0, savingsRate), icon: PiggyBank },
+      const b = [
+        { label: "Receitas vs Despesas", value: Math.max(0, incVsExp) },
+        { label: "Controle de Dívidas", value: debtCtrl },
+        { label: "Investimentos", value: Math.min(100, investScore) },
+        { label: "Taxa de Economia", value: Math.max(0, savingsRate) },
       ];
 
-      const score = Math.round(breakdown.reduce((s, b) => s + b.value, 0) / breakdown.length);
-      setScoreData({ score: Math.max(0, Math.min(100, score)), breakdown });
+      const s = Math.round(b.reduce((sum, item) => sum + item.value, 0) / b.length);
+      setScore(Math.max(0, Math.min(100, s)));
+      setBreakdown(b);
       setLoading(false);
     };
     fetch();
   }, []);
 
   if (loading) {
-    return (
-      <div className="flex justify-center items-center py-20">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
-      </div>
-    );
+    return <div className="flex justify-center items-center py-20"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
   }
 
   if (!hasData) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 max-w-4xl mx-auto">
         <div>
-          <h1 className="font-display text-2xl md:text-3xl font-bold">Score Financeiro</h1>
-          <p className="text-muted-foreground">Sua pontuação de saúde financeira</p>
+          <h1 className="font-display text-2xl font-bold">Score Financeiro</h1>
+          <p className="text-muted-foreground text-sm">Sua pontuação de saúde financeira</p>
         </div>
         <Card>
-          <CardContent className="p-10 flex flex-col items-center text-center gap-4">
-            <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center">
-              <Heart className="h-8 w-8 text-primary" />
+          <CardContent className="p-8 md:p-12 flex flex-col items-center text-center gap-4">
+            <div className="h-20 w-20 rounded-3xl gradient-primary flex items-center justify-center">
+              <Heart className="h-10 w-10 text-primary-foreground" />
             </div>
-            <h2 className="font-display text-xl font-semibold">Adicione suas receitas e despesas para gerar seu score financeiro.</h2>
-            <p className="text-muted-foreground max-w-md">
-              O score é calculado automaticamente com base nos seus dados reais.
-            </p>
-            <Button asChild className="gradient-primary border-0 mt-2">
+            <h2 className="font-display text-xl font-semibold">Seu score será calculado automaticamente</h2>
+            <p className="text-muted-foreground max-w-sm text-sm">Adicione suas receitas e despesas para gerar seu score financeiro personalizado.</p>
+            <Button asChild className="gradient-primary border-0 h-11 mt-2">
               <Link to="/movimentacoes"><Plus className="h-4 w-4 mr-2" /> Adicionar movimentação</Link>
             </Button>
           </CardContent>
@@ -105,60 +104,57 @@ export default function FinancialScore() {
     );
   }
 
-  const { score, breakdown } = scoreData;
-  const circumference = 2 * Math.PI * 70;
-  const strokeDashoffset = circumference - (score / 100) * circumference;
+  const circumference = 2 * Math.PI * 58;
+  const offset = circumference - (score / 100) * circumference;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 max-w-4xl mx-auto">
       <div>
-        <h1 className="font-display text-2xl md:text-3xl font-bold">Score Financeiro</h1>
-        <p className="text-muted-foreground">Sua pontuação de saúde financeira</p>
+        <h1 className="font-display text-2xl font-bold">Score Financeiro</h1>
+        <p className="text-muted-foreground text-sm">Sua pontuação de saúde financeira</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-1">
-          <CardContent className="p-6 flex flex-col items-center justify-center">
-            <div className="relative w-48 h-48">
-              <svg className="w-48 h-48 transform -rotate-90" viewBox="0 0 160 160">
-                <circle cx="80" cy="80" r="70" stroke="hsl(var(--muted))" strokeWidth="10" fill="none" />
-                <circle cx="80" cy="80" r="70" stroke="hsl(var(--primary))" strokeWidth="10" fill="none" strokeLinecap="round"
-                  strokeDasharray={circumference} strokeDashoffset={strokeDashoffset} className="transition-all duration-1000" />
-              </svg>
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className={`font-display text-4xl font-bold ${getScoreColor(score)}`}>{score}</span>
-                <span className="text-sm text-muted-foreground">de 100</span>
+      {/* Score Ring */}
+      <Card className="animate-scale-in">
+        <CardContent className="p-6 flex flex-col items-center">
+          <div className="relative w-40 h-40 mb-4">
+            <svg className="w-40 h-40 transform -rotate-90" viewBox="0 0 128 128">
+              <circle cx="64" cy="64" r="58" stroke="hsl(var(--muted))" strokeWidth="8" fill="none" />
+              <circle cx="64" cy="64" r="58"
+                stroke="hsl(var(--primary))" strokeWidth="8" fill="none" strokeLinecap="round"
+                strokeDasharray={circumference} strokeDashoffset={offset}
+                className="transition-all duration-1000 ease-out" />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className={`font-display text-4xl font-bold ${getScoreColor(score)}`}>{score}</span>
+              <span className="text-xs text-muted-foreground">de 100</span>
+            </div>
+          </div>
+          <p className={`font-display text-lg font-semibold ${getScoreColor(score)}`}>{getScoreLabel(score)}</p>
+          <p className="text-xs text-muted-foreground mt-1">Baseado nos seus dados reais</p>
+        </CardContent>
+      </Card>
+
+      {/* Breakdown */}
+      <Card className="animate-slide-up">
+        <CardContent className="p-5 space-y-4">
+          <p className="font-display font-semibold text-sm">Detalhamento</p>
+          {breakdown.map((item) => (
+            <div key={item.label} className="space-y-1.5">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">{item.label}</span>
+                <span className={`font-semibold ${getScoreColor(item.value)}`}>{item.value}</span>
+              </div>
+              <div className="h-2 rounded-full bg-muted overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-1000 ease-out ${getBarColor(item.value)}`}
+                  style={{ width: `${item.value}%` }}
+                />
               </div>
             </div>
-            <p className={`mt-4 font-display text-lg font-semibold ${getScoreColor(score)}`}>
-              {getScoreLabel(score)}
-            </p>
-            <p className="text-sm text-muted-foreground text-center mt-1">
-              Atualizado automaticamente com base nos seus dados
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="font-display text-lg">Detalhamento do Score</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {breakdown.map((item) => (
-              <div key={item.label} className="space-y-1.5">
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center gap-2">
-                    <item.icon className="h-4 w-4 text-primary" />
-                    <span>{item.label}</span>
-                  </div>
-                  <span className={`font-semibold ${getScoreColor(item.value)}`}>{item.value}/100</span>
-                </div>
-                <Progress value={item.value} className="h-2" />
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      </div>
+          ))}
+        </CardContent>
+      </Card>
     </div>
   );
 }
