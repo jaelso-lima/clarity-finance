@@ -46,7 +46,7 @@ export default function Arena() {
 
   const totalBalance = (wallet?.subscription_balance || 0) + (wallet?.earnings_balance || 0);
 
-  const handleCreate = async () => {
+  const handleCreate = async (vsBot = false) => {
     const bet = parseFloat(betAmount);
     if (bet <= 0) { toast({ title: "Valor inválido", variant: "destructive" }); return; }
     if (bet > totalBalance) { toast({ title: "Saldo insuficiente", variant: "destructive" }); return; }
@@ -55,22 +55,39 @@ export default function Arena() {
       ? { board: Array(9).fill(null), currentPlayer: "X" }
       : { board: createInitialCheckersBoard(), currentPlayer: "red" };
 
-    const { data, error } = await supabase.from("game_matches").insert({
+    const matchData: any = {
       game_type: gameType,
       player1_id: user!.id,
       bet_amount: bet,
       game_state: initialState,
-      status: "waiting",
-    }).select().single();
+      status: vsBot ? "playing" : "waiting",
+    };
+
+    if (vsBot) {
+      matchData.player2_id = user!.id; // Store as self since bot doesn't have a real account
+      matchData.started_at = new Date().toISOString();
+      // We'll use game_state to mark it as a bot match
+      initialState.isBot = true;
+    }
+
+    matchData.game_state = initialState;
+
+    const { data, error } = await supabase.from("game_matches").insert(matchData).select().single();
 
     if (error) { toast({ title: "Erro ao criar partida", description: error.message, variant: "destructive" }); return; }
 
     // Debit coins
-    await debitCoins(user!.id, bet, "game_entry", `Entrada na partida ${data.id}`);
+    await debitCoins(user!.id, bet, "game_entry", `Entrada na partida ${data.id}${vsBot ? " (vs Bot)" : ""}`);
     await refreshWallet();
 
-    toast({ title: "Desafio criado!", description: "Aguardando oponente..." });
-    setCreateOpen(false);
+    if (vsBot) {
+      toast({ title: "Partida contra Bot iniciada! 🤖" });
+      setCreateOpen(false);
+      setActiveMatch(data);
+    } else {
+      toast({ title: "Desafio criado!", description: "Aguardando oponente..." });
+      setCreateOpen(false);
+    }
     fetchMatches();
   };
 
