@@ -225,13 +225,16 @@ export default function CheckersGame({ match, userId, onEnd }: CheckersGameProps
     const piece = board[row][col];
 
     if (selectedCell) {
-      const [sr, sc] = selectedCell;
       const isValidMove = possibleMoves.some(([mr, mc]) => mr === row && mc === col);
       if (isValidMove) {
+        const [sr, sc] = selectedCell;
         makeMove(sr, sc, row, col);
         return;
       }
     }
+
+    // If forced to continue chain capture, can't select another piece
+    if (forcedPiece) return;
 
     if (isOwnPiece(piece)) {
       setSelectedCell([row, col]);
