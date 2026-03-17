@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DollarSign, TrendingUp, TrendingDown, Wallet, Eye, EyeOff, ArrowRight, Plus,
-  ShoppingBag, Car, Home, Gamepad2, GraduationCap, HeartPulse, MoreHorizontal,
+  ShoppingBag, Car, Home, Gamepad2, GraduationCap, HeartPulse, MoreHorizontal, Coins,
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
@@ -179,8 +179,8 @@ export default function Dashboard() {
             {[
               { icon: Plus, label: "Adicionar", to: "/movimentacoes" },
               { icon: TrendingUp, label: "Investir", to: "/investimentos" },
-              { icon: Wallet, label: "Contas", to: "/contas" },
-              { icon: DollarSign, label: "Score", to: "/score" },
+              { icon: Gamepad2, label: "Arena", to: "/arena" },
+              { icon: Coins, label: "Carteira", to: "/carteira" },
             ].map((action) => (
               <Link key={action.label} to={action.to} className="flex flex-col items-center gap-1.5 group">
                 <div className="h-12 w-12 rounded-2xl bg-accent flex items-center justify-center group-hover:bg-primary/10 transition-colors">
