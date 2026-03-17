@@ -33,7 +33,7 @@ export default function CheckersGame({ match, userId, onEnd }: CheckersGameProps
       const { data } = await supabase.from("game_matches").select("game_state, status, winner_id, chat_messages").eq("id", match.id).single();
       if (data) {
         setGameState(data.game_state);
-        setChatMessages(data.chat_messages || []);
+        setChatMessages((data.chat_messages as any[]) || []);
         if (data.status === "finished") {
           const won = data.winner_id === userId;
           toast({ title: won ? "🏆 Você venceu!" : "Você perdeu!" });
