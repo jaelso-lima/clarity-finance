@@ -316,8 +316,15 @@ export default function CheckersGame({ match, userId, onEnd }: CheckersGameProps
       setGameState(newState);
     }
 
-    setSelectedCell(canContinue ? [toR, toC] : null);
-    setPossibleMoves(canContinue ? getValidMoves(toR, toC, newBoard).captures : []);
+    if (canContinue) {
+      setSelectedCell([toR, toC]);
+      setForcedPiece([toR, toC]);
+      setPossibleMoves(getValidMoves(toR, toC, newBoard).captures);
+    } else {
+      setSelectedCell(null);
+      setForcedPiece(null);
+      setPossibleMoves([]);
+    }
   };
 
   function checkHasMoves(b: Piece[][], color: string) {
