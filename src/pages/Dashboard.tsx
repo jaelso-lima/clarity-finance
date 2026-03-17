@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DollarSign, TrendingUp, TrendingDown, Wallet, Eye, EyeOff, ArrowRight, Plus,
-  ShoppingBag, Car, Home, Gamepad2, GraduationCap, HeartPulse, MoreHorizontal,
+  ShoppingBag, Car, Home, Gamepad2, GraduationCap, HeartPulse, MoreHorizontal, Coins,
 } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } from "recharts";
 import { supabase } from "@/integrations/supabase/client";
