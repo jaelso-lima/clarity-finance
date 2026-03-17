@@ -68,19 +68,25 @@ export default function CheckersGame({ match, userId, onEnd }: CheckersGameProps
       newBoard[move.to[0]][move.to[1]] = piece;
       newBoard[move.from[0]][move.from[1]] = null;
 
-      // Capture
-      if (Math.abs(move.to[0] - move.from[0]) === 2) {
-        const dr = Math.sign(move.to[0] - move.from[0]);
-        const dc = Math.sign(move.to[1] - move.from[1]);
-        newBoard[move.from[0] + dr][move.from[1] + dc] = null;
+      // Capture: walk diagonal to find captured piece
+      const dr = Math.sign(move.to[0] - move.from[0]);
+      const dc = Math.sign(move.to[1] - move.from[1]);
+      const distance = Math.abs(move.to[0] - move.from[0]);
+      let isCapture = false;
+      for (let step = 1; step < distance; step++) {
+        const mr = move.from[0] + dr * step;
+        const mc = move.from[1] + dc * step;
+        if (newBoard[mr][mc] !== null) {
+          newBoard[mr][mc] = null;
+          isCapture = true;
+          break;
+        }
       }
 
       // Promotion
       if (piece === "red" && move.to[0] === 0) newBoard[move.to[0]][move.to[1]] = "red-king";
       if (piece === "black" && move.to[0] === 7) newBoard[move.to[0]][move.to[1]] = "black-king";
 
-      // Check multi-capture
-      const isCapture = Math.abs(move.to[0] - move.from[0]) === 2;
       let canContinue = false;
       if (isCapture) {
         const { captures } = getValidMoves(move.to[0], move.to[1], newBoard);
@@ -150,24 +156,48 @@ export default function CheckersGame({ match, userId, onEnd }: CheckersGameProps
     const piece = b[row][col];
     if (!piece) return { moves: [], captures: [] };
 
+    const pieceIsKing = piece.endsWith("-king");
     const directions: [number, number][] = [];
-    if (piece.startsWith("red") || isKing(piece)) directions.push([-1, -1], [-1, 1]);
-    if (piece.startsWith("black") || isKing(piece)) directions.push([1, -1], [1, 1]);
+    if (piece.startsWith("red") || pieceIsKing) directions.push([-1, -1], [-1, 1]);
+    if (piece.startsWith("black") || pieceIsKing) directions.push([1, -1], [1, 1]);
 
     const moves: [number, number][] = [];
     const captures: [number, number][] = [];
 
     for (const [dr, dc] of directions) {
-      const nr = row + dr;
-      const nc = col + dc;
-      if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8) {
-        if (b[nr][nc] === null) {
-          moves.push([nr, nc]);
-        } else if (isOpponent(b[nr][nc])) {
-          const jr = nr + dr;
-          const jc = nc + dc;
-          if (jr >= 0 && jr < 8 && jc >= 0 && jc < 8 && b[jr][jc] === null) {
-            captures.push([jr, jc]);
+      if (pieceIsKing) {
+        // King moves multiple squares like a bishop
+        let nr = row + dr;
+        let nc = col + dc;
+        let foundOpponent: [number, number] | null = null;
+        while (nr >= 0 && nr < 8 && nc >= 0 && nc < 8) {
+          if (b[nr][nc] === null) {
+            if (foundOpponent) {
+              captures.push([nr, nc]);
+            } else {
+              moves.push([nr, nc]);
+            }
+          } else if (isOpponent(b[nr][nc]) && !foundOpponent) {
+            foundOpponent = [nr, nc];
+          } else {
+            break; // blocked by own piece or second opponent
+          }
+          nr += dr;
+          nc += dc;
+        }
+      } else {
+        // Normal piece moves 1 square
+        const nr = row + dr;
+        const nc = col + dc;
+        if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8) {
+          if (b[nr][nc] === null) {
+            moves.push([nr, nc]);
+          } else if (isOpponent(b[nr][nc])) {
+            const jr = nr + dr;
+            const jc = nc + dc;
+            if (jr >= 0 && jr < 8 && jc >= 0 && jc < 8 && b[jr][jc] === null) {
+              captures.push([jr, jc]);
+            }
           }
         }
       }
@@ -221,9 +251,17 @@ export default function CheckersGame({ match, userId, onEnd }: CheckersGameProps
 
     const dr = Math.sign(toR - fromR);
     const dc = Math.sign(toC - fromC);
-    const isCapture = Math.abs(toR - fromR) === 2;
-    if (isCapture) {
-      newBoard[fromR + dr][fromC + dc] = null;
+    const distance = Math.abs(toR - fromR);
+    // Remove captured piece (walk along diagonal to find it)
+    let isCapture = false;
+    for (let step = 1; step < distance; step++) {
+      const mr = fromR + dr * step;
+      const mc = fromC + dc * step;
+      if (newBoard[mr][mc] && !newBoard[mr][mc]!.startsWith(myColor)) {
+        newBoard[mr][mc] = null;
+        isCapture = true;
+        break;
+      }
     }
 
     if (piece === "red" && toR === 0) newBoard[toR][toC] = "red-king";
