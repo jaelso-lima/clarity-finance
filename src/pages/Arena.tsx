@@ -6,13 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Gamepad2, Trophy, Coins, Plus, Users, Clock, AlertTriangle } from "lucide-react";
+import { Gamepad2, Trophy, Coins, Plus, Users, Clock, AlertTriangle, Bot } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import TicTacToeGame from "@/components/games/TicTacToeGame";
 import CheckersGame from "@/components/games/CheckersGame";
 import { useWallet } from "@/hooks/useWallet";
+import { BOT_USER_ID } from "@/lib/botAI";
 
 export default function Arena() {
   const { user } = useAuth();
