@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
 import { Menu, LogOut, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { NotificationBell } from "@/components/NotificationBell";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
@@ -23,12 +24,7 @@ export function AppLayout() {
       <AppSidebar open={sidebarOpen} onToggle={() => setSidebarOpen(!sidebarOpen)} />
       <main className={`flex-1 transition-all duration-300 ${sidebarOpen ? "md:ml-64" : "md:ml-20"}`}>
         <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-card/80 backdrop-blur-sm px-6">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="md:hidden"
-          >
+          <Button variant="ghost" size="icon" onClick={() => setSidebarOpen(!sidebarOpen)} className="md:hidden">
             <Menu className="h-5 w-5" />
           </Button>
           <div className="flex-1" />
@@ -40,9 +36,14 @@ export function AppLayout() {
             <Button variant="ghost" size="icon" onClick={handleLogout} title="Sair">
               <LogOut className="h-4 w-4" />
             </Button>
-            <div className="h-8 w-8 rounded-full gradient-primary flex items-center justify-center text-primary-foreground text-sm font-semibold">
-              {profile?.full_name?.charAt(0)?.toUpperCase() || "U"}
-            </div>
+            <Link to="/perfil">
+              <Avatar className="h-8 w-8 cursor-pointer">
+                <AvatarImage src={profile?.avatar_url || ""} />
+                <AvatarFallback className="gradient-primary text-primary-foreground text-sm font-semibold">
+                  {profile?.full_name?.charAt(0)?.toUpperCase() || "U"}
+                </AvatarFallback>
+              </Avatar>
+            </Link>
           </div>
         </header>
         <div className="p-6">

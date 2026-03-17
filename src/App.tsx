@@ -10,18 +10,17 @@ import LandingPage from "./pages/LandingPage";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
-import Expenses from "./pages/Expenses";
-import Income from "./pages/Income";
+import Movimentacoes from "./pages/Movimentacoes";
 import Bills from "./pages/Bills";
 import Investments from "./pages/Investments";
 import Plans from "./pages/Plans";
 import FinancialScore from "./pages/FinancialScore";
-import Challenges from "./pages/Challenges";
 import Projections from "./pages/Projections";
 import Comparison from "./pages/Comparison";
 import Diagnosis from "./pages/Diagnosis";
 import Calculators from "./pages/Calculators";
 import Referrals from "./pages/Referrals";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import { AppLayout } from "./components/layout/AppLayout";
 import { AdminLayout } from "./components/layout/AdminLayout";
@@ -53,16 +52,17 @@ const App = () => (
             <Route element={<ProtectedRoute />}>
               <Route element={<AppLayout />}>
                 <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/despesas" element={<Expenses />} />
-                <Route path="/receitas" element={<Income />} />
+                <Route path="/movimentacoes" element={<Movimentacoes />} />
+                <Route path="/despesas" element={<Movimentacoes />} />
+                <Route path="/receitas" element={<Movimentacoes />} />
                 <Route path="/contas" element={<Bills />} />
                 <Route path="/investimentos" element={<Investments />} />
                 <Route path="/planos" element={<Plans />} />
                 <Route path="/score" element={<FinancialScore />} />
-                <Route path="/desafios" element={<Challenges />} />
                 <Route path="/projecoes" element={<Projections />} />
                 <Route path="/comparacao" element={<Comparison />} />
                 <Route path="/indicacoes" element={<Referrals />} />
+                <Route path="/perfil" element={<Profile />} />
               </Route>
               <Route element={<AdminLayout />}>
                 <Route path="/admin" element={<AdminDashboard />} />

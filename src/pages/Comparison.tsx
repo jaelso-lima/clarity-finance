@@ -1,35 +1,33 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Users, TrendingDown, TrendingUp, Minus } from "lucide-react";
-
-interface ComparisonItem {
-  category: string;
-  userValue: number;
-  avgValue: number;
-}
-
-const comparisons: ComparisonItem[] = [
-  { category: "Alimentação", userValue: 520, avgValue: 700 },
-  { category: "Transporte", userValue: 410, avgValue: 300 },
-  { category: "Moradia", userValue: 900, avgValue: 950 },
-  { category: "Lazer", userValue: 450, avgValue: 380 },
-  { category: "Educação", userValue: 200, avgValue: 350 },
-  { category: "Saúde", userValue: 180, avgValue: 250 },
-  { category: "Delivery", userValue: 320, avgValue: 280 },
-  { category: "Assinaturas", userValue: 90, avgValue: 120 },
-];
-
-function getStatus(user: number, avg: number) {
-  const ratio = user / avg;
-  if (ratio <= 0.85) return { label: "Abaixo da média", color: "text-success", bg: "bg-success", icon: TrendingDown };
-  if (ratio >= 1.15) return { label: "Acima da média", color: "text-warning", bg: "bg-warning", icon: TrendingUp };
-  return { label: "Na média", color: "text-muted-foreground", bg: "bg-muted-foreground", icon: Minus };
-}
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Users, Plus } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Comparison() {
-  const totalUser = comparisons.reduce((a, c) => a + c.userValue, 0);
-  const totalAvg = comparisons.reduce((a, c) => a + c.avgValue, 0);
-  const betterCount = comparisons.filter(c => c.userValue < c.avgValue).length;
+  const [loading, setLoading] = useState(true);
+  const [hasData, setHasData] = useState(false);
+
+  useEffect(() => {
+    const check = async () => {
+      const [expRes, incRes] = await Promise.all([
+        supabase.from("expenses").select("id", { count: "exact", head: true }),
+        supabase.from("incomes").select("id", { count: "exact", head: true }),
+      ]);
+      setHasData((expRes.count || 0) > 0 && (incRes.count || 0) > 0);
+      setLoading(false);
+    };
+    check();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -38,68 +36,28 @@ export default function Comparison() {
         <p className="text-muted-foreground">Compare seus gastos com a média dos usuários (100% anônimo)</p>
       </div>
 
-      {/* Summary */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {!hasData ? (
         <Card>
-          <CardContent className="p-5 text-center">
-            <Users className="h-8 w-8 text-primary mx-auto mb-2" />
-            <p className="font-display text-2xl font-bold">1.247</p>
-            <p className="text-sm text-muted-foreground">Usuários comparados</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-5 text-center">
-            <TrendingDown className="h-8 w-8 text-success mx-auto mb-2" />
-            <p className="font-display text-2xl font-bold">{betterCount}/{comparisons.length}</p>
-            <p className="text-sm text-muted-foreground">Categorias abaixo da média</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-5 text-center">
-            <p className={`font-display text-2xl font-bold ${totalUser < totalAvg ? "text-success" : "text-warning"}`}>
-              {totalUser < totalAvg ? "-" : "+"}R$ {Math.abs(totalUser - totalAvg).toLocaleString("pt-BR")}
+          <CardContent className="p-10 flex flex-col items-center text-center gap-4">
+            <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center">
+              <Users className="h-8 w-8 text-primary" />
+            </div>
+            <h2 className="font-display text-xl font-semibold">Dados insuficientes para comparação.</h2>
+            <p className="text-muted-foreground max-w-md">
+              Adicione suas receitas e despesas para comparar seus gastos com outros usuários da plataforma.
             </p>
-            <p className="text-sm text-muted-foreground">vs gasto médio total</p>
+            <Button asChild className="gradient-primary border-0 mt-2">
+              <Link to="/movimentacoes"><Plus className="h-4 w-4 mr-2" /> Adicionar movimentação</Link>
+            </Button>
           </CardContent>
         </Card>
-      </div>
-
-      {/* Comparison List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {comparisons.map((item) => {
-          const status = getStatus(item.userValue, item.avgValue);
-          const maxVal = Math.max(item.userValue, item.avgValue);
-          return (
-            <Card key={item.category}>
-              <CardContent className="p-5">
-                <div className="flex items-center justify-between mb-3">
-                  <p className="font-semibold">{item.category}</p>
-                  <div className={`flex items-center gap-1 text-xs font-medium ${status.color}`}>
-                    <status.icon className="h-3 w-3" />
-                    {status.label}
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Você</span>
-                    <span className="font-semibold">R$ {item.userValue.toLocaleString("pt-BR")}</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-muted overflow-hidden">
-                    <div className={`h-full rounded-full ${status.bg}`} style={{ width: `${(item.userValue / maxVal) * 100}%` }} />
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-muted-foreground">Média da plataforma</span>
-                    <span className="font-semibold">R$ {item.avgValue.toLocaleString("pt-BR")}</span>
-                  </div>
-                  <div className="h-2 rounded-full bg-muted overflow-hidden">
-                    <div className="h-full rounded-full bg-primary/40" style={{ width: `${(item.avgValue / maxVal) * 100}%` }} />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+      ) : (
+        <Card>
+          <CardContent className="p-10 text-center">
+            <p className="text-muted-foreground">A comparação anônima estará disponível quando houver mais usuários na plataforma.</p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
