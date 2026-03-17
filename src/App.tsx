@@ -17,7 +17,7 @@ import Investments from "./pages/Investments";
 import Plans from "./pages/Plans";
 import FinancialScore from "./pages/FinancialScore";
 import Challenges from "./pages/Challenges";
-import Projections from "./pages/Projections";
+
 import Comparison from "./pages/Comparison";
 import Diagnosis from "./pages/Diagnosis";
 import Calculators from "./pages/Calculators";
