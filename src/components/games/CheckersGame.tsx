@@ -19,6 +19,7 @@ export default function CheckersGame({ match, userId, onEnd }: CheckersGameProps
   const [gameState, setGameState] = useState<any>(match.game_state);
   const [selectedCell, setSelectedCell] = useState<[number, number] | null>(null);
   const [possibleMoves, setPossibleMoves] = useState<[number, number][]>([]);
+  const [forcedPiece, setForcedPiece] = useState<[number, number] | null>(null); // locked during chain capture
   const [chatMsg, setChatMsg] = useState("");
   const [chatMessages, setChatMessages] = useState<any[]>(match.chat_messages || []);
   const { toast } = useToast();
