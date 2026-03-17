@@ -170,6 +170,9 @@ export default function Arena() {
         <TabsList>
           <TabsTrigger value="lobby">Lobby</TabsTrigger>
           <TabsTrigger value="my">Minhas Partidas</TabsTrigger>
+          <TabsTrigger value="ranking">
+            <Trophy className="h-3.5 w-3.5 mr-1" /> Ranking
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="lobby" className="space-y-4 mt-4">
