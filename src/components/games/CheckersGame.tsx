@@ -150,24 +150,48 @@ export default function CheckersGame({ match, userId, onEnd }: CheckersGameProps
     const piece = b[row][col];
     if (!piece) return { moves: [], captures: [] };
 
+    const pieceIsKing = piece.endsWith("-king");
     const directions: [number, number][] = [];
-    if (piece.startsWith("red") || isKing(piece)) directions.push([-1, -1], [-1, 1]);
-    if (piece.startsWith("black") || isKing(piece)) directions.push([1, -1], [1, 1]);
+    if (piece.startsWith("red") || pieceIsKing) directions.push([-1, -1], [-1, 1]);
+    if (piece.startsWith("black") || pieceIsKing) directions.push([1, -1], [1, 1]);
 
     const moves: [number, number][] = [];
     const captures: [number, number][] = [];
 
     for (const [dr, dc] of directions) {
-      const nr = row + dr;
-      const nc = col + dc;
-      if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8) {
-        if (b[nr][nc] === null) {
-          moves.push([nr, nc]);
-        } else if (isOpponent(b[nr][nc])) {
-          const jr = nr + dr;
-          const jc = nc + dc;
-          if (jr >= 0 && jr < 8 && jc >= 0 && jc < 8 && b[jr][jc] === null) {
-            captures.push([jr, jc]);
+      if (pieceIsKing) {
+        // King moves multiple squares like a bishop
+        let nr = row + dr;
+        let nc = col + dc;
+        let foundOpponent: [number, number] | null = null;
+        while (nr >= 0 && nr < 8 && nc >= 0 && nc < 8) {
+          if (b[nr][nc] === null) {
+            if (foundOpponent) {
+              captures.push([nr, nc]);
+            } else {
+              moves.push([nr, nc]);
+            }
+          } else if (isOpponent(b[nr][nc]) && !foundOpponent) {
+            foundOpponent = [nr, nc];
+          } else {
+            break; // blocked by own piece or second opponent
+          }
+          nr += dr;
+          nc += dc;
+        }
+      } else {
+        // Normal piece moves 1 square
+        const nr = row + dr;
+        const nc = col + dc;
+        if (nr >= 0 && nr < 8 && nc >= 0 && nc < 8) {
+          if (b[nr][nc] === null) {
+            moves.push([nr, nc]);
+          } else if (isOpponent(b[nr][nc])) {
+            const jr = nr + dr;
+            const jc = nc + dc;
+            if (jr >= 0 && jr < 8 && jc >= 0 && jc < 8 && b[jr][jc] === null) {
+              captures.push([jr, jc]);
+            }
           }
         }
       }
