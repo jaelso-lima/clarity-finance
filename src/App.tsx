@@ -22,6 +22,8 @@ import Comparison from "./pages/Comparison";
 import Diagnosis from "./pages/Diagnosis";
 import Calculators from "./pages/Calculators";
 import Simulator from "./pages/Simulator";
+import Arena from "./pages/Arena";
+import WalletPage from "./pages/WalletPage";
 import Referrals from "./pages/Referrals";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
