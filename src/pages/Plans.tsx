@@ -43,9 +43,9 @@ const plans = [
 ];
 
 const periods = [
-  { label: "Mensal", price: "R$14,90/mês", discount: null },
-  { label: "Semestral", price: "R$12,90/mês", discount: "Economize 13%" },
-  { label: "Anual", price: "R$9,90/mês", discount: "Economize 33%" },
+  { label: "Mensal", price: "R$19,90/mês", discount: null },
+  { label: "Semestral", price: "R$16,90/mês", discount: "Economize 15%" },
+  { label: "Anual", price: "R$12,90/mês", discount: "Economize 35%" },
 ];
 
 export default function Plans() {
