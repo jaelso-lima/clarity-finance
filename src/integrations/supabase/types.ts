@@ -44,6 +44,39 @@ export type Database = {
         }
         Relationships: []
       }
+      coin_transactions: {
+        Row: {
+          amount: number
+          balance_type: string
+          created_at: string
+          description: string | null
+          id: string
+          reference_id: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          balance_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference_id?: string | null
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          balance_type?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          reference_id?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       expenses: {
         Row: {
           categoria: string
@@ -74,6 +107,57 @@ export type Database = {
           pagamento?: string | null
           user_id?: string
           valor?: number
+        }
+        Relationships: []
+      }
+      game_matches: {
+        Row: {
+          bet_amount: number
+          chat_messages: Json
+          created_at: string
+          finished_at: string | null
+          game_state: Json
+          game_type: string
+          id: string
+          platform_fee: number
+          player1_id: string
+          player2_id: string | null
+          started_at: string | null
+          status: string
+          updated_at: string
+          winner_id: string | null
+        }
+        Insert: {
+          bet_amount?: number
+          chat_messages?: Json
+          created_at?: string
+          finished_at?: string | null
+          game_state?: Json
+          game_type: string
+          id?: string
+          platform_fee?: number
+          player1_id: string
+          player2_id?: string | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          winner_id?: string | null
+        }
+        Update: {
+          bet_amount?: number
+          chat_messages?: Json
+          created_at?: string
+          finished_at?: string | null
+          game_state?: Json
+          game_type?: string
+          id?: string
+          platform_fee?: number
+          player1_id?: string
+          player2_id?: string | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          winner_id?: string | null
         }
         Relationships: []
       }
@@ -285,6 +369,78 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      wallets: {
+        Row: {
+          created_at: string
+          earnings_balance: number
+          id: string
+          subscription_balance: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          earnings_balance?: number
+          id?: string
+          subscription_balance?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          earnings_balance?: number
+          id?: string
+          subscription_balance?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      withdrawal_requests: {
+        Row: {
+          admin_notes: string | null
+          amount: number
+          bank_name: string | null
+          created_at: string
+          holder_name: string
+          id: string
+          pix_key: string
+          pix_type: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount: number
+          bank_name?: string | null
+          created_at?: string
+          holder_name: string
+          id?: string
+          pix_key: string
+          pix_type?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          amount?: number
+          bank_name?: string | null
+          created_at?: string
+          holder_name?: string
+          id?: string
+          pix_key?: string
+          pix_type?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
