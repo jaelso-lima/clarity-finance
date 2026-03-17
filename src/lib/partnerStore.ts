@@ -77,7 +77,7 @@ let partnersData: Partner[] = [
   },
   {
     id: "p2", name: "Roberto Lima", email: "roberto@email.com", phone: "(11) 99999-0002",
-    share: 50, role: "socio", permissions: { ...DEFAULT_FULL_PERMISSIONS, configuracoes: false, seguranca: false },
+    share: 50, role: "socio", permissions: { ...DEFAULT_FULL_PERMISSIONS, configuracoes: false, seguranca: false, jogos: false },
     status: "ativo", totalReceived: 9375, joinedAt: "2025-01-01",
   },
 ];
