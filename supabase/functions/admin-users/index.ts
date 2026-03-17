@@ -26,8 +26,15 @@ Deno.serve(async (req) => {
 
     const { action, userId } = await req.json();
 
-    if (!action || !userId) {
-      return new Response(JSON.stringify({ error: "Ação e userId são obrigatórios" }), {
+    if (!action) {
+      return new Response(JSON.stringify({ error: "Ação é obrigatória" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (action !== "list" && !userId) {
+      return new Response(JSON.stringify({ error: "userId é obrigatório para esta ação" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
