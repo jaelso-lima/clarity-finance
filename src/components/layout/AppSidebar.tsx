@@ -13,7 +13,7 @@ const navItems = [
   { icon: FileText, label: "Contas", path: "/contas" },
   { icon: TrendingUp, label: "Investimentos", path: "/investimentos" },
   { icon: Calculator, label: "Simulador", path: "/simulador" },
-  { icon: LineChart, label: "Projeções", path: "/projecoes" },
+  
   { icon: Trophy, label: "Conquistas", path: "/desafios" },
   { icon: Gamepad2, label: "Arena", path: "/arena" },
   { icon: Wallet, label: "Carteira", path: "/carteira" },
