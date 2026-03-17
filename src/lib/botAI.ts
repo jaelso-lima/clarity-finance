@@ -154,11 +154,17 @@ function simulateMove(board: Piece[][], from: [number, number], to: [number, num
   newBoard[to[0]][to[1]] = piece;
   newBoard[from[0]][from[1]] = null;
 
-  // Capture
-  if (Math.abs(to[0] - from[0]) === 2) {
-    const dr = Math.sign(to[0] - from[0]);
-    const dc = Math.sign(to[1] - from[1]);
-    newBoard[from[0] + dr][from[1] + dc] = null;
+  // Capture: walk along diagonal to find captured piece
+  const dr = Math.sign(to[0] - from[0]);
+  const dc = Math.sign(to[1] - from[1]);
+  const distance = Math.abs(to[0] - from[0]);
+  for (let step = 1; step < distance; step++) {
+    const mr = from[0] + dr * step;
+    const mc = from[1] + dc * step;
+    if (newBoard[mr][mc] !== null) {
+      newBoard[mr][mc] = null;
+      break;
+    }
   }
 
   // Promotion

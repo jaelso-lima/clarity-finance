@@ -245,9 +245,17 @@ export default function CheckersGame({ match, userId, onEnd }: CheckersGameProps
 
     const dr = Math.sign(toR - fromR);
     const dc = Math.sign(toC - fromC);
-    const isCapture = Math.abs(toR - fromR) === 2;
-    if (isCapture) {
-      newBoard[fromR + dr][fromC + dc] = null;
+    const distance = Math.abs(toR - fromR);
+    // Remove captured piece (walk along diagonal to find it)
+    let isCapture = false;
+    for (let step = 1; step < distance; step++) {
+      const mr = fromR + dr * step;
+      const mc = fromC + dc * step;
+      if (newBoard[mr][mc] && !newBoard[mr][mc]!.startsWith(myColor)) {
+        newBoard[mr][mc] = null;
+        isCapture = true;
+        break;
+      }
     }
 
     if (piece === "red" && toR === 0) newBoard[toR][toC] = "red-king";
