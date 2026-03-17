@@ -263,6 +263,10 @@ export default function Arena() {
             </div>
           )}
         </TabsContent>
+
+        <TabsContent value="ranking" className="mt-4">
+          <ArenaRanking />
+        </TabsContent>
       </Tabs>
 
       {/* Create Match Dialog */}
