@@ -51,7 +51,7 @@ export default function Arena() {
     if (bet <= 0) { toast({ title: "Valor inválido", variant: "destructive" }); return; }
     if (bet > totalBalance) { toast({ title: "Saldo insuficiente", variant: "destructive" }); return; }
 
-    const initialState = gameType === "tic_tac_toe"
+    const initialState: any = gameType === "tic_tac_toe"
       ? { board: Array(9).fill(null), currentPlayer: "X" }
       : { board: createInitialCheckersBoard(), currentPlayer: "red" };
 
