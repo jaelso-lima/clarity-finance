@@ -42,6 +42,7 @@ export default function Referrals() {
     const urls: Record<string, string> = {
       whatsapp: `https://wa.me/?text=${encodeURIComponent(text)}`,
       twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,
+      instagram: `https://www.instagram.com/`,
     };
     if (urls[platform]) window.open(urls[platform], "_blank");
   }
