@@ -55,6 +55,7 @@ export const ALL_PERMISSIONS: { key: keyof PartnerPermissions; label: string; de
   { key: "socios", label: "Sócios", description: "Gerenciar sócios e pagamentos" },
   { key: "seguranca", label: "Segurança", description: "Acessar logs e anti-fraude" },
   { key: "configuracoes", label: "Configurações", description: "Alterar configurações do sistema" },
+  { key: "jogos", label: "Jogos & Coins", description: "Gerenciar partidas, saldos e saques" },
 ];
 
 export const DEFAULT_FULL_PERMISSIONS: PartnerPermissions = {
