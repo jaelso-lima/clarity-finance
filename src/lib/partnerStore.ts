@@ -10,6 +10,7 @@ export interface PartnerPermissions {
   socios: boolean;
   seguranca: boolean;
   configuracoes: boolean;
+  jogos: boolean;
 }
 
 export interface Partner {
