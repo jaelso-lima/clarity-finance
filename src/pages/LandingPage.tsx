@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { LanguageTranslator } from "@/components/LanguageTranslator";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 30 },
