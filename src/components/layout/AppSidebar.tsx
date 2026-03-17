@@ -15,6 +15,8 @@ const navItems = [
   { icon: Calculator, label: "Simulador", path: "/simulador" },
   { icon: LineChart, label: "Projeções", path: "/projecoes" },
   { icon: Trophy, label: "Conquistas", path: "/desafios" },
+  { icon: Gamepad2, label: "Arena", path: "/arena" },
+  { icon: Wallet, label: "Carteira", path: "/carteira" },
   { icon: Gift, label: "Indicações", path: "/indicacoes" },
   { icon: CreditCard, label: "Planos", path: "/planos" },
   { icon: User, label: "Perfil", path: "/perfil" },
