@@ -117,14 +117,22 @@ export default function WalletPage() {
       <div className="flex items-start gap-3 rounded-lg border border-muted bg-muted/30 p-3">
         <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" />
         <div className="text-xs text-muted-foreground space-y-1">
-          <p><strong>Saldo Assinatura:</strong> Recebido mensalmente com o plano PRO. Não pode ser sacado e expira no próximo ciclo.</p>
-          <p><strong>Saldo de Ganhos:</strong> Obtido em desafios e atividades. Pode ser acumulado e sacado.</p>
-          <p><strong>Mínimo para saque:</strong> 10 Coins. Aprovação manual pelo admin.</p>
+          <p><strong>Bônus de Boas-vindas:</strong> Todo usuário recebe 5 Coins grátis (saldo assinatura). Esses coins podem ser usados em desafios mas <strong>não podem ser sacados</strong>.</p>
+          <p><strong>Saldo Assinatura:</strong> Recebido com plano PRO. Não pode ser sacado e expira no próximo ciclo.</p>
+          <p><strong>Saldo de Ganhos:</strong> Obtido em desafios e atividades. Pode ser acumulado e sacado quando atingir <strong>mínimo de 10 Coins</strong>.</p>
+          <p><strong>Para sacar:</strong> Você precisa ter pelo menos 10 Coins no saldo de <strong>ganhos</strong>. Coins de assinatura não contam.</p>
         </div>
       </div>
 
-      <Button onClick={() => setWithdrawOpen(true)} className="gradient-primary border-0">
+      <Button
+        onClick={() => setWithdrawOpen(true)}
+        className="gradient-primary border-0"
+        disabled={!wallet || wallet.earnings_balance < 10}
+      >
         <ArrowUpFromLine className="h-4 w-4 mr-2" /> Solicitar Saque
+        {wallet && wallet.earnings_balance < 10 && (
+          <span className="ml-2 text-xs opacity-75">(mín. 10 Coins de ganhos)</span>
+        )}
       </Button>
 
       {/* Withdrawal dialog */}
