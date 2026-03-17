@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import TicTacToeGame from "@/components/games/TicTacToeGame";
 import CheckersGame from "@/components/games/CheckersGame";
+import ArenaRanking from "@/components/arena/ArenaRanking";
 import { useWallet } from "@/hooks/useWallet";
 import { BOT_USER_ID } from "@/lib/botAI";
 
@@ -169,6 +170,9 @@ export default function Arena() {
         <TabsList>
           <TabsTrigger value="lobby">Lobby</TabsTrigger>
           <TabsTrigger value="my">Minhas Partidas</TabsTrigger>
+          <TabsTrigger value="ranking">
+            <Trophy className="h-3.5 w-3.5 mr-1" /> Ranking
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="lobby" className="space-y-4 mt-4">
@@ -258,6 +262,10 @@ export default function Arena() {
               ))}
             </div>
           )}
+        </TabsContent>
+
+        <TabsContent value="ranking" className="mt-4">
+          <ArenaRanking />
         </TabsContent>
       </Tabs>
 
