@@ -64,7 +64,8 @@ export default function LandingPage() {
             <a href="#planos" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Planos</a>
             <a href="#faq" className="text-sm text-muted-foreground hover:text-foreground transition-colors">FAQ</a>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <LanguageTranslator />
             <Button variant="ghost" asChild><Link to="/login">Entrar</Link></Button>
             <Button asChild className="gradient-primary border-0 rounded-xl"><Link to="/register">Começar grátis</Link></Button>
           </div>
