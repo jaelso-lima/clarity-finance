@@ -447,7 +447,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_arena_ranking: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          coins_earned: number
+          draws: number
+          losses: number
+          player_id: string
+          player_name: string
+          total_games: number
+          wins: number
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
