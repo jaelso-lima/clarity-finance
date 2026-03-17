@@ -288,9 +288,14 @@ export default function Arena() {
               <p>• Vencedor recebe o prêmio menos 10% de taxa</p>
               <p>• Abandono = derrota automática</p>
             </div>
-            <Button onClick={handleCreate} className="w-full gradient-primary border-0">
-              <Trophy className="h-4 w-4 mr-2" /> Criar Desafio
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={() => handleCreate(false)} className="flex-1 gradient-primary border-0">
+                <Trophy className="h-4 w-4 mr-2" /> Desafiar Jogador
+              </Button>
+              <Button onClick={() => handleCreate(true)} variant="outline" className="flex-1">
+                <Bot className="h-4 w-4 mr-2" /> Jogar vs Bot 🤖
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
