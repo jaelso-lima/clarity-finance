@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import {
   LayoutDashboard, ArrowLeftRight, FileText, TrendingUp, CreditCard, ChevronLeft, LogOut,
-  Heart, LineChart, Gift, Shield, User, Trophy, Calculator,
+  Heart, LineChart, Gift, Shield, User, Trophy, Calculator, Gamepad2, Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
