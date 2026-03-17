@@ -6,13 +6,14 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Gamepad2, Trophy, Coins, Plus, Users, Clock, AlertTriangle } from "lucide-react";
+import { Gamepad2, Trophy, Coins, Plus, Users, Clock, AlertTriangle, Bot } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import TicTacToeGame from "@/components/games/TicTacToeGame";
 import CheckersGame from "@/components/games/CheckersGame";
 import { useWallet } from "@/hooks/useWallet";
+import { BOT_USER_ID } from "@/lib/botAI";
 
 export default function Arena() {
   const { user } = useAuth();
@@ -45,31 +46,48 @@ export default function Arena() {
 
   const totalBalance = (wallet?.subscription_balance || 0) + (wallet?.earnings_balance || 0);
 
-  const handleCreate = async () => {
+  const handleCreate = async (vsBot = false) => {
     const bet = parseFloat(betAmount);
     if (bet <= 0) { toast({ title: "Valor inválido", variant: "destructive" }); return; }
     if (bet > totalBalance) { toast({ title: "Saldo insuficiente", variant: "destructive" }); return; }
 
-    const initialState = gameType === "tic_tac_toe"
+    const initialState: any = gameType === "tic_tac_toe"
       ? { board: Array(9).fill(null), currentPlayer: "X" }
       : { board: createInitialCheckersBoard(), currentPlayer: "red" };
 
-    const { data, error } = await supabase.from("game_matches").insert({
+    const matchData: any = {
       game_type: gameType,
       player1_id: user!.id,
       bet_amount: bet,
       game_state: initialState,
-      status: "waiting",
-    }).select().single();
+      status: vsBot ? "playing" : "waiting",
+    };
+
+    if (vsBot) {
+      matchData.player2_id = user!.id; // Store as self since bot doesn't have a real account
+      matchData.started_at = new Date().toISOString();
+      // We'll use game_state to mark it as a bot match
+      initialState.isBot = true;
+    }
+
+    matchData.game_state = initialState;
+
+    const { data, error } = await supabase.from("game_matches").insert(matchData).select().single();
 
     if (error) { toast({ title: "Erro ao criar partida", description: error.message, variant: "destructive" }); return; }
 
     // Debit coins
-    await debitCoins(user!.id, bet, "game_entry", `Entrada na partida ${data.id}`);
+    await debitCoins(user!.id, bet, "game_entry", `Entrada na partida ${data.id}${vsBot ? " (vs Bot)" : ""}`);
     await refreshWallet();
 
-    toast({ title: "Desafio criado!", description: "Aguardando oponente..." });
-    setCreateOpen(false);
+    if (vsBot) {
+      toast({ title: "Partida contra Bot iniciada! 🤖" });
+      setCreateOpen(false);
+      setActiveMatch(data);
+    } else {
+      toast({ title: "Desafio criado!", description: "Aguardando oponente..." });
+      setCreateOpen(false);
+    }
     fetchMatches();
   };
 
@@ -270,9 +288,14 @@ export default function Arena() {
               <p>• Vencedor recebe o prêmio menos 10% de taxa</p>
               <p>• Abandono = derrota automática</p>
             </div>
-            <Button onClick={handleCreate} className="w-full gradient-primary border-0">
-              <Trophy className="h-4 w-4 mr-2" /> Criar Desafio
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={() => handleCreate(false)} className="flex-1 gradient-primary border-0">
+                <Trophy className="h-4 w-4 mr-2" /> Desafiar Jogador
+              </Button>
+              <Button onClick={() => handleCreate(true)} variant="outline" className="flex-1">
+                <Bot className="h-4 w-4 mr-2" /> Jogar vs Bot 🤖
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

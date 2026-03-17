@@ -1,10 +1,11 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Send, MessageCircle } from "lucide-react";
+import { Send, MessageCircle, Bot } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { getBotCheckersMove } from "@/lib/botAI";
 
 interface CheckersGameProps {
   match: any;
@@ -12,7 +13,7 @@ interface CheckersGameProps {
   onEnd: () => void;
 }
 
-type Piece = string | null; // "red", "black", "red-king", "black-king", null
+type Piece = string | null;
 
 export default function CheckersGame({ match, userId, onEnd }: CheckersGameProps) {
   const [gameState, setGameState] = useState<any>(match.game_state);
@@ -21,14 +22,18 @@ export default function CheckersGame({ match, userId, onEnd }: CheckersGameProps
   const [chatMsg, setChatMsg] = useState("");
   const [chatMessages, setChatMessages] = useState<any[]>(match.chat_messages || []);
   const { toast } = useToast();
+  const botThinking = useRef(false);
 
+  const isBot = gameState.isBot === true;
   const isPlayer1 = match.player1_id === userId;
   const myColor = isPlayer1 ? "red" : "black";
+  const botColor = myColor === "red" ? "black" : "red";
   const isMyTurn = gameState.currentPlayer === myColor;
   const board: Piece[][] = gameState.board || [];
 
-  // Poll for updates
+  // Poll for updates (PvP only)
   useEffect(() => {
+    if (isBot) return;
     const interval = setInterval(async () => {
       const { data } = await supabase.from("game_matches").select("game_state, status, winner_id, chat_messages").eq("id", match.id).single();
       if (data) {
@@ -42,7 +47,100 @@ export default function CheckersGame({ match, userId, onEnd }: CheckersGameProps
       }
     }, 2000);
     return () => clearInterval(interval);
-  }, [match.id, userId, onEnd, toast]);
+  }, [match.id, userId, onEnd, toast, isBot]);
+
+  // Bot auto-play
+  useEffect(() => {
+    if (!isBot || isMyTurn || botThinking.current) return;
+
+    botThinking.current = true;
+    const timer = setTimeout(async () => {
+      const move = getBotCheckersMove(board, botColor);
+      if (!move) {
+        // Bot has no moves - player wins
+        await finishBotGame("player_wins");
+        botThinking.current = false;
+        return;
+      }
+
+      const newBoard = board.map(r => [...r]);
+      const piece = newBoard[move.from[0]][move.from[1]];
+      newBoard[move.to[0]][move.to[1]] = piece;
+      newBoard[move.from[0]][move.from[1]] = null;
+
+      // Capture
+      if (Math.abs(move.to[0] - move.from[0]) === 2) {
+        const dr = Math.sign(move.to[0] - move.from[0]);
+        const dc = Math.sign(move.to[1] - move.from[1]);
+        newBoard[move.from[0] + dr][move.from[1] + dc] = null;
+      }
+
+      // Promotion
+      if (piece === "red" && move.to[0] === 0) newBoard[move.to[0]][move.to[1]] = "red-king";
+      if (piece === "black" && move.to[0] === 7) newBoard[move.to[0]][move.to[1]] = "black-king";
+
+      // Check multi-capture
+      const isCapture = Math.abs(move.to[0] - move.from[0]) === 2;
+      let canContinue = false;
+      if (isCapture) {
+        const { captures } = getValidMoves(move.to[0], move.to[1], newBoard);
+        canContinue = captures.length > 0;
+      }
+
+      const nextPlayer = canContinue ? botColor : myColor;
+
+      // Check win
+      const playerPieces = newBoard.flat().filter(p => p?.startsWith(myColor)).length;
+      if (playerPieces === 0 || (!canContinue && !checkHasMoves(newBoard, myColor))) {
+        const newState = { board: newBoard, currentPlayer: nextPlayer, isBot: true };
+        await finishBotGame("bot_wins", newState);
+        botThinking.current = false;
+        return;
+      }
+
+      const newState = { board: newBoard, currentPlayer: nextPlayer, isBot: true };
+      await supabase.from("game_matches").update({ game_state: newState }).eq("id", match.id);
+      setGameState(newState);
+      botThinking.current = false;
+
+      // If bot can continue capturing, trigger another move
+      if (canContinue) {
+        botThinking.current = false; // Will re-trigger the effect
+      }
+    }, 1000 + Math.random() * 800);
+
+    return () => clearTimeout(timer);
+  }, [gameState, isBot, isMyTurn]);
+
+  const finishBotGame = async (result: "player_wins" | "bot_wins" | "draw", newState?: any) => {
+    const state = newState || gameState;
+    if (result === "player_wins") {
+      const fee = match.bet_amount * 2 * 0.1;
+      const prize = match.bet_amount * 2 - fee;
+      await supabase.from("game_matches").update({
+        game_state: state, status: "finished", winner_id: userId,
+        platform_fee: fee, finished_at: new Date().toISOString(),
+      }).eq("id", match.id);
+      const { data: wallet } = await supabase.from("wallets").select("*").eq("user_id", userId).single();
+      if (wallet) {
+        await supabase.from("wallets").update({
+          earnings_balance: wallet.earnings_balance + prize, updated_at: new Date().toISOString(),
+        }).eq("user_id", userId);
+      }
+      await supabase.from("coin_transactions").insert({
+        user_id: userId, type: "game_win", amount: prize, balance_type: "earnings",
+        description: `Vitória vs Bot - Dama (${match.bet_amount} coins)`, reference_id: match.id,
+      });
+      toast({ title: "🏆 Você venceu contra o Bot!" });
+    } else if (result === "bot_wins") {
+      await supabase.from("game_matches").update({
+        game_state: state, status: "finished", winner_id: null,
+        finished_at: new Date().toISOString(),
+      }).eq("id", match.id);
+      toast({ title: "🤖 O Bot venceu! Tente novamente." });
+    }
+    onEnd();
+  };
 
   const isOwnPiece = (piece: Piece) => piece?.startsWith(myColor);
   const isOpponent = (piece: Piece) => piece !== null && !piece.startsWith(myColor);
@@ -78,7 +176,6 @@ export default function CheckersGame({ match, userId, onEnd }: CheckersGameProps
     return { moves, captures };
   }, [myColor]);
 
-  // Check if any piece has a mandatory capture
   const hasAnyCapture = useCallback((b: Piece[][], color: string) => {
     for (let r = 0; r < 8; r++) {
       for (let c = 0; c < 8; c++) {
@@ -99,7 +196,6 @@ export default function CheckersGame({ match, userId, onEnd }: CheckersGameProps
     if (selectedCell) {
       const [sr, sc] = selectedCell;
       const isValidMove = possibleMoves.some(([mr, mc]) => mr === row && mc === col);
-
       if (isValidMove) {
         makeMove(sr, sc, row, col);
         return;
@@ -123,7 +219,6 @@ export default function CheckersGame({ match, userId, onEnd }: CheckersGameProps
     newBoard[toR][toC] = piece;
     newBoard[fromR][fromC] = null;
 
-    // Check capture
     const dr = Math.sign(toR - fromR);
     const dc = Math.sign(toC - fromC);
     const isCapture = Math.abs(toR - fromR) === 2;
@@ -131,11 +226,9 @@ export default function CheckersGame({ match, userId, onEnd }: CheckersGameProps
       newBoard[fromR + dr][fromC + dc] = null;
     }
 
-    // Promotion
     if (piece === "red" && toR === 0) newBoard[toR][toC] = "red-king";
     if (piece === "black" && toR === 7) newBoard[toR][toC] = "black-king";
 
-    // Check for multi-capture
     let canContinue = false;
     if (isCapture) {
       const { captures } = getValidMoves(toR, toC, newBoard);
@@ -145,47 +238,38 @@ export default function CheckersGame({ match, userId, onEnd }: CheckersGameProps
     const opponent = myColor === "red" ? "black" : "red";
     const nextPlayer = canContinue ? myColor : opponent;
 
-    // Check win condition
     const opponentPieces = newBoard.flat().filter(p => p?.startsWith(opponent)).length;
     const opponentHasMoves = !canContinue && checkHasMoves(newBoard, opponent);
 
-    let winner = null;
     if (opponentPieces === 0 || !opponentHasMoves) {
-      winner = myColor;
-    }
-
-    const newState = { board: newBoard, currentPlayer: nextPlayer };
-
-    if (winner) {
-      const winnerId = userId;
-      const totalPot = match.bet_amount * 2;
-      const fee = totalPot * 0.1;
-      const prize = totalPot - fee;
-
-      await supabase.from("game_matches").update({
-        game_state: newState,
-        status: "finished",
-        winner_id: winnerId,
-        platform_fee: fee,
-        finished_at: new Date().toISOString(),
-      }).eq("id", match.id);
-
-      // Credit winner
-      const { data: wallet } = await supabase.from("wallets").select("*").eq("user_id", winnerId).single();
-      if (wallet) {
-        await supabase.from("wallets").update({
-          earnings_balance: wallet.earnings_balance + prize,
-          updated_at: new Date().toISOString(),
-        }).eq("user_id", winnerId);
+      if (isBot) {
+        const newState = { board: newBoard, currentPlayer: nextPlayer, isBot: true };
+        await finishBotGame("player_wins", newState);
+      } else {
+        // PvP win logic
+        const totalPot = match.bet_amount * 2;
+        const fee = totalPot * 0.1;
+        const prize = totalPot - fee;
+        await supabase.from("game_matches").update({
+          game_state: { board: newBoard, currentPlayer: nextPlayer },
+          status: "finished", winner_id: userId, platform_fee: fee,
+          finished_at: new Date().toISOString(),
+        }).eq("id", match.id);
+        const { data: wallet } = await supabase.from("wallets").select("*").eq("user_id", userId).single();
+        if (wallet) {
+          await supabase.from("wallets").update({
+            earnings_balance: wallet.earnings_balance + prize, updated_at: new Date().toISOString(),
+          }).eq("user_id", userId);
+        }
+        await supabase.from("coin_transactions").insert({
+          user_id: userId, type: "game_win", amount: prize, balance_type: "earnings",
+          description: `Vitória - Dama (${match.bet_amount} coins)`, reference_id: match.id,
+        });
+        toast({ title: "🏆 Você venceu!" });
+        onEnd();
       }
-      await supabase.from("coin_transactions").insert({
-        user_id: winnerId, type: "game_win", amount: prize, balance_type: "earnings",
-        description: `Vitória - Dama (${match.bet_amount} coins)`, reference_id: match.id,
-      });
-
-      toast({ title: "🏆 Você venceu!" });
-      onEnd();
     } else {
+      const newState = { board: newBoard, currentPlayer: nextPlayer, ...(isBot ? { isBot: true } : {}) };
       await supabase.from("game_matches").update({ game_state: newState }).eq("id", match.id);
       setGameState(newState);
     }
@@ -234,11 +318,16 @@ export default function CheckersGame({ match, userId, onEnd }: CheckersGameProps
   return (
     <div className="space-y-4">
       <div className="text-center">
+        {isBot && (
+          <Badge className="mb-2 bg-warning/20 text-warning border-warning/30">
+            <Bot className="h-3 w-3 mr-1" /> vs Bot Especialista
+          </Badge>
+        )}
         <p className="text-sm text-muted-foreground">
           Você é <strong className={myColor === "red" ? "text-destructive" : ""}>{myColor === "red" ? "Vermelho" : "Preto"}</strong>
-          {" · "}{isMyTurn ? "Sua vez!" : "Vez do oponente..."}
+          {" · "}{isMyTurn ? "Sua vez!" : isBot ? "Bot pensando..." : "Vez do oponente..."}
         </p>
-        <Badge variant="outline" className="mt-1">{match.bet_amount * 2} Coins em jogo</Badge>
+        <Badge variant="outline" className="mt-1">{isBot ? match.bet_amount : match.bet_amount * 2} Coins em jogo</Badge>
       </div>
 
       {/* Board */}
@@ -269,34 +358,36 @@ export default function CheckersGame({ match, userId, onEnd }: CheckersGameProps
         </div>
       </div>
 
-      {/* Chat */}
-      <div className="border rounded-lg">
-        <div className="flex items-center gap-2 px-3 py-2 border-b bg-muted/30">
-          <MessageCircle className="h-4 w-4 text-muted-foreground" />
-          <span className="text-xs font-medium text-muted-foreground">Chat da partida</span>
+      {/* Chat - hidden for bot games */}
+      {!isBot && (
+        <div className="border rounded-lg">
+          <div className="flex items-center gap-2 px-3 py-2 border-b bg-muted/30">
+            <MessageCircle className="h-4 w-4 text-muted-foreground" />
+            <span className="text-xs font-medium text-muted-foreground">Chat da partida</span>
+          </div>
+          <div className="max-h-32 overflow-y-auto p-3 space-y-1">
+            {chatMessages.map((msg: any, i: number) => (
+              <div key={i} className={`text-xs ${msg.userId === userId ? "text-right text-primary" : "text-left text-muted-foreground"}`}>
+                <span className="inline-block rounded-lg bg-muted/50 px-2 py-1">{msg.text}</span>
+              </div>
+            ))}
+            {chatMessages.length === 0 && <p className="text-xs text-center text-muted-foreground">Sem mensagens</p>}
+          </div>
+          <div className="flex gap-2 p-2 border-t">
+            <Input
+              value={chatMsg}
+              onChange={(e) => setChatMsg(e.target.value)}
+              placeholder="Mensagem curta..."
+              maxLength={100}
+              className="text-xs h-8"
+              onKeyDown={(e) => e.key === "Enter" && handleChat()}
+            />
+            <Button size="sm" variant="ghost" onClick={handleChat} className="h-8 w-8 p-0">
+              <Send className="h-3 w-3" />
+            </Button>
+          </div>
         </div>
-        <div className="max-h-32 overflow-y-auto p-3 space-y-1">
-          {chatMessages.map((msg: any, i: number) => (
-            <div key={i} className={`text-xs ${msg.userId === userId ? "text-right text-primary" : "text-left text-muted-foreground"}`}>
-              <span className="inline-block rounded-lg bg-muted/50 px-2 py-1">{msg.text}</span>
-            </div>
-          ))}
-          {chatMessages.length === 0 && <p className="text-xs text-center text-muted-foreground">Sem mensagens</p>}
-        </div>
-        <div className="flex gap-2 p-2 border-t">
-          <Input
-            value={chatMsg}
-            onChange={(e) => setChatMsg(e.target.value)}
-            placeholder="Mensagem curta..."
-            maxLength={100}
-            className="text-xs h-8"
-            onKeyDown={(e) => e.key === "Enter" && handleChat()}
-          />
-          <Button size="sm" variant="ghost" onClick={handleChat} className="h-8 w-8 p-0">
-            <Send className="h-3 w-3" />
-          </Button>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
