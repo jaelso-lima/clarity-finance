@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Users, Gift, Copy, Check, Share2, Trophy, Star } from "lucide-react";
+import { Users, Gift, Copy, Check, Share2, Trophy, Star, Instagram } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 const referralCode = "FINANCE-ABC123";
@@ -42,6 +42,7 @@ export default function Referrals() {
     const urls: Record<string, string> = {
       whatsapp: `https://wa.me/?text=${encodeURIComponent(text)}`,
       twitter: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`,
+      instagram: `https://www.instagram.com/`,
     };
     if (urls[platform]) window.open(urls[platform], "_blank");
   }
@@ -82,6 +83,9 @@ export default function Referrals() {
             </Button>
             <Button variant="outline" size="sm" onClick={() => handleShare("twitter")} className="gap-2">
               <Share2 className="h-4 w-4" /> Twitter
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => handleShare("instagram")} className="gap-2">
+              <Instagram className="h-4 w-4" /> Instagram
             </Button>
           </div>
         </CardContent>
