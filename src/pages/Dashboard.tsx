@@ -58,7 +58,7 @@ export default function Dashboard() {
       // Category breakdown
       const catMap: Record<string, number> = {};
       expenses.forEach(e => { catMap[e.categoria] = (catMap[e.categoria] || 0) + Number(e.valor); });
-      const colors = ["hsl(252, 56%, 57%)", "hsl(280, 60%, 55%)", "hsl(200, 70%, 50%)", "hsl(38, 92%, 50%)", "hsl(340, 65%, 50%)", "hsl(152, 60%, 42%)", "hsl(10, 70%, 55%)"];
+      const colors = ["hsl(217, 91%, 50%)", "hsl(230, 80%, 55%)", "hsl(200, 70%, 50%)", "hsl(38, 92%, 50%)", "hsl(340, 65%, 50%)", "hsl(152, 60%, 42%)", "hsl(10, 70%, 55%)"];
       setExpensesByCategory(Object.entries(catMap).map(([name, value], i) => ({ name, value, color: colors[i % colors.length] })));
 
       // Monthly evolution
