@@ -1,1 +1,4 @@
 project_id = "qyhcvnzjovzlwsybpydn"
+
+[functions.monthly-coin-cycle]
+verify_jwt = false
