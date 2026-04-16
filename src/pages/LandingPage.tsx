@@ -73,8 +73,12 @@ export default function LandingPage() {
       </nav>
 
       {/* HERO — ATENÇÃO */}
-      <section className="gradient-hero py-20 md:py-32 overflow-hidden">
-        <div className="container mx-auto px-4 text-center">
+      <section className="bg-background relative py-20 md:py-32 overflow-hidden">
+        {/* Subtle accent blob */}
+        <div className="absolute top-0 right-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
+        
+        <div className="container mx-auto px-4 text-center relative z-10">
           <motion.div initial="hidden" animate="visible" variants={fadeUp} custom={0}>
             <span className="inline-flex items-center gap-2 rounded-full border bg-card/50 backdrop-blur px-4 py-1.5 text-sm font-medium text-muted-foreground mb-6">
               <Sparkles className="h-4 w-4 text-primary" /> +5.000 usuários controlando suas finanças
@@ -127,7 +131,7 @@ export default function LandingPage() {
       </section>
 
       {/* DESEJO — Funcionalidades */}
-      <section id="funcionalidades" className="py-20 md:py-28 bg-muted/30">
+      <section id="funcionalidades" className="py-20 md:py-28 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">
@@ -186,7 +190,7 @@ export default function LandingPage() {
       </section>
 
       {/* AÇÃO — Planos */}
-      <section id="planos" className="py-20 md:py-28 bg-muted/30">
+      <section id="planos" className="py-20 md:py-28 bg-background">
         <div className="container mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">Planos simples e transparentes</h2>
@@ -295,7 +299,7 @@ export default function LandingPage() {
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="py-20 md:py-28 bg-muted/30">
+      <section id="faq" className="py-20 md:py-28 bg-background">
         <div className="container mx-auto px-4 max-w-3xl">
           <div className="text-center mb-16"><h2 className="font-display text-3xl md:text-4xl font-bold mb-4">Perguntas Frequentes</h2></div>
           <div className="space-y-3">
@@ -313,16 +317,17 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Final */}
-      <section className="py-20 gradient-primary">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-primary-foreground mb-4">Pronto para assumir o controle?</h2>
-          <p className="text-primary-foreground/80 text-lg mb-8 max-w-xl mx-auto">Crie sua conta em 30 segundos e comece a organizar suas finanças hoje.</p>
+      <section className="py-20 bg-background border-t border-border/50 relative overflow-hidden">
+        <div className="absolute inset-0 bg-primary/5 pattern-grid-lg" />
+        <div className="container mx-auto px-4 text-center relative z-10">
+          <h2 className="font-display text-3xl md:text-4xl font-bold mb-4">Pronto para assumir o controle?</h2>
+          <p className="text-muted-foreground text-lg mb-8 max-w-xl mx-auto">Crie sua conta em 30 segundos e comece a organizar suas finanças hoje.</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button size="lg" variant="secondary" asChild className="text-base px-8 h-14 rounded-xl">
+            <Button size="lg" className="gradient-primary border-0 text-base px-8 h-14 rounded-xl shadow-lg shadow-primary/25" asChild>
               <Link to="/register">Criar conta grátis <ArrowRight className="ml-2 h-5 w-5" /></Link>
             </Button>
           </div>
-          <p className="text-primary-foreground/60 text-sm mt-6">Sem cartão de crédito. Cancele quando quiser.</p>
+          <p className="text-muted-foreground text-sm mt-6">Sem cartão de crédito. Cancele quando quiser.</p>
         </div>
       </section>
 
